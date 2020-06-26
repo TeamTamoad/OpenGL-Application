@@ -1,0 +1,556 @@
+#version 330 core
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoords;
+
+out vec3 FragPos;
+out vec3 Normal;
+out vec2 TexCoords;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+void main()
+{
+	gl_Position = projection * view * model * vec4(aPos, 1.0);
+	
+	// Caculate light in world space
+	FragPos = vec3(model * vec4(aPos, 1.0));
+	Normal = mat3(transpose(inverse(model))) * aNormal;
+	TexCoords = aTexCoords;
+}
+
+#version 330 core
+
+struct Material
+{
+	sampler2D diffuse;
+	sampler2D specular;
+	sampler2D emission;
+	float shininess;
+};
+
+struct DirLight
+{
+	vec3 direction;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+struct PointLight
+{
+	vec3 position;
+
+	float constant;
+	float linear;
+	float quadratic;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+struct SpotLight
+{
+	vec3 position;
+	vec3 direction;
+	float innerCutOff;
+	float outerCutOff;
+
+	float constant;
+	float linear;
+	float quadratic;
+
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
+vec3 CalcDirLight(DirLight light, const vec3 normal, const vec3 viewDir, const vec3 diffMap, const vec3 specMap);
+vec3 CalcPointLight(PointLight light, const vec3 normal, const vec3 viewDir, const vec3 diffeMap, const vec3 specMap);
+vec3 CalcSpotLight(SpotLight light, const vec3 normal, const vec3 viewDir, const vec3 diffMap, const vec3 specMap);
+
+in vec3 FragPos;
+in vec3 Normal;
+in vec2 TexCoords;
+
+out vec4 FragColor;
+
+uniform Material material;
+uniform vec3 viewPos;
+uniform DirLight dirLight;
+uniform SpotLight spotLight;
+#define NR_POINT_LIGHT 4
+uniform PointLight pointLights[NR_POINT_LIGHT];
+//uniform float time;
+
+void main()
+{
+	// properties
+	vec3 norm = normalize(Normal);
+	vec3 viewDir = normalize(viewPos - FragPos);
+	vec3 diffMap = texture(material.diffuse, TexCoords).rgb;
+	vec3 specMap = texture(material.specular, TexCoords).rgb;
+	vec3 result = vec3(0.0);
+
+	// Directional lighting
+	result += CalcDirLight(dirLight, norm, viewDir, diffMap, specMap);
+	// Point lights
+	for (int i=0; i < NR_POINT_LIGHT; i++)
+		result += CalcPointLight(pointLights[i], norm, viewDir, diffMap, specMap);
+	// Spot light
+	result += CalcSpotLight(spotLight, norm, viewDir, diffMap, specMap);
+
+	FragColor = vec4(result, 1.0f);
+	/*vec3 emission = vec3(0);
+	if (texture(material.specular, TexCoords).r == 0 && diff == 0)
+	{
+		emission = texture(material.emission, TexCoords).rgb;
+		emission = texture(material.emission, TexCoords + vec2(0.0, time/3)).rgb;
+	}*/	
+}
+
+vec3 CalcDirLight(DirLight light, const vec3 normal, const vec3 viewDir, const vec3 diffMap, const vec3 specMap)
+{
+	vec3 lightDir = normalize(-light.direction);
+	// diffuse shading
+	float diff = max(dot(normal, lightDir), 0.0);
+	// specular shading
+	vec3 reflectDir = reflect(-lightDir, normal);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+
+	// combine results
+	vec3 ambient = light.ambient * diffMap;
+	vec3 diffuse = light.diffuse * diff * diffMap;
+	vec3 specular = light.specular * spec * texture(material.specular, TexCoords).rgb;
+
+	return (ambient + diffuse + specular);
+}
+
+vec3 CalcPointLight(PointLight light, const vec3 normal, const vec3 viewDir, const vec3 diffMap, const vec3 specMap)
+{
+	vec3 lightDir = normalize(light.position - FragPos);
+	// diffuse shading
+	float diff = max(dot(normal, lightDir), 0.0);
+	// specular shading
+	vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	// attenuation
+	float distance = length(light.position - FragPos);
+	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
+	
+	// combine results
+	vec3 ambient  = light.ambient  * diffMap;
+    vec3 diffuse  = light.diffuse  * diff * diffMap;
+    vec3 specular = light.specular * spec * specMap;
+    ambient  *= attenuation;
+    diffuse  *= attenuation;
+    specular *= attenuation;
+
+    return (ambient + diffuse + specular);
+}
+
+vec3 CalcSpotLight(SpotLight light, const vec3 normal, const vec3 viewDir, const vec3 diffMap, const vec3 specMap)
+{
+	vec3 lightDir = normalize(light.position - FragPos);
+	// diffuse shading
+	float diff = max(dot(normal, lightDir), 0.0);
+	// specular shading
+	vec3 reflectDir = reflect(-lightDir, normal);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+	// attenuation
+	float distance = length(light.position - FragPos);
+	float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
+
+	float theta = dot(lightDir, normalize(-light.direction));
+	float epsilon = light.innerCutOff - light.outerCutOff;
+	float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+
+	// combine results
+	vec3 ambient  = light.ambient  * diffMap;
+    vec3 diffuse  = light.diffuse  * diff * diffMap;
+    vec3 specular = light.specular * spec * specMap;
+    ambient  *= attenuation;
+    diffuse  *= attenuation * intensity;
+    specular *= attenuation * intensity;
+
+	return (ambient + diffuse + specular);
+}
+
+// Tutorial.cpp : This file contains the 'main' function. Program execution begins and ends there.
+
+#define GLEW_STATIC
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+
+#include "Renderer.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "Shader.h"
+#include "Texture2D.h"
+#include "Camera.h"
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xPos, double yPos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void ProcessInput(GLFWwindow* window);
+
+// Settings
+const GLuint SCR_WIDTH = 800;
+const GLuint SCR_HEIGHT = 600;
+
+// Camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+bool firstMouse = true;
+
+// Timing
+float deltaTime = 0.0f; // Time between current frame and last frame
+float lastFrame = 0.0f; 
+
+// lighting
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+int main()
+{
+    if (!glfwInit())
+        return -1;
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, true);
+
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "OpenGL Tutorial", nullptr, nullptr); // Windowed
+    //GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
+    
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
+    if (!window)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    glfwMakeContextCurrent(window);
+
+    glewExperimental = GL_TRUE;
+    glewInit();
+    std::cout << glGetString(GL_VERSION) << "\n\n";
+
+    int nrAttributes;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
+    std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << "\n\n";
+
+    glEnable(GL_DEPTH_TEST);
+
+    // Create Shader Program
+    Shader lightingShader("res/shaders/color.vert", "res/shaders/color.frag");
+    Shader lampShader("res/shaders/lightSource.vert", "res/shaders/lightSource.frag");
+
+    float vertices[] = {
+        // positions          // normals           // texture coords
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+    };
+    
+    glm::vec3 pointLightPositions[] = {
+        glm::vec3( 0.7f,  0.2f,   2.0f),
+        glm::vec3( 2.3f, -3.3f,  -4.0f),
+        glm::vec3(-4.0f,  2.0f, -12.0f),
+        glm::vec3( 0.0f,  0.0f, - 3.0f)
+    };
+    // Generate vertex array object
+    GLuint cubeVAO;
+    glGenVertexArrays(1, &cubeVAO);
+
+    VertexBuffer VBO = VertexBuffer(vertices, sizeof(vertices));
+
+    // Set Cube VAO attribute
+    glBindVertexArray(cubeVAO);
+    VBO.Bind();
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    
+    GLuint lampVAO;
+    glGenVertexArrays(1, &lampVAO);
+
+    glBindVertexArray(lampVAO);
+    VBO.Bind();
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    
+    glm::vec3 cubePositions[] = {
+        glm::vec3(0.0f,  0.0f,  0.0f),
+        glm::vec3(2.0f,  5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f,  3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f,  2.0f, -2.5f),
+        glm::vec3(1.5f,  0.2f, -1.5f),
+        glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
+
+    // TEXTURE
+    Texture2D boxColor = Texture2D("res/images/container2.png", 0);
+    Texture2D boxSpecular = Texture2D("res/images/container2_specular.png", 1);
+    Texture2D matrix = Texture2D("res/images/matrix.jpg", 2);
+    
+    // Set static uniform values
+
+
+    // ================== Render Loop ===========================
+    while (!glfwWindowShouldClose(window))
+    {
+        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Timing logic
+        const float currentFrame = (float) glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
+        lightPos = glm::vec3(sin(currentFrame ) * 5, 1, cos(currentFrame) * 5);
+       /* glm::vec3 lightColor;
+        lightColor.x = sin(currentFrame * 2.0f);
+        lightColor.y = sin(currentFrame * 0.7f);
+        lightColor.z = sin(currentFrame * 1.3f);
+
+        glm::vec3 ambientColor = lightColor * glm::vec3(0.2f);
+        glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);*/
+
+        // Handle input
+        ProcessInput(window);
+
+        // =================== color cube section ===================
+
+        lightingShader.Use();
+
+        // Update tranformation matrix
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(camera.m_FOV), 800.0f / 600.0f, 0.1f, 100.0f);
+
+        // Set uniform values
+        lightingShader.SetUniform1i("material.diffuse", 0);
+        lightingShader.SetUniform1i("material.specular", 1);
+        lightingShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
+        lightingShader.SetUniformVec3("viewPos", camera.m_Position);
+
+        // directional light
+        lightingShader.SetUniformVec3("dirLight.direction", 0.0f, -1.0f, 0.0f);
+        lightingShader.SetUniformVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+        lightingShader.SetUniformVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+        lightingShader.SetUniformVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+        // point light 1
+        lightingShader.SetUniformVec3("pointLights[0].position", pointLightPositions[0]);
+        lightingShader.SetUniformVec3("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+        lightingShader.SetUniformVec3("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+        lightingShader.SetUniformVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.SetUniform1f("pointLights[0].constant", 1.0f);
+        lightingShader.SetUniform1f("pointLights[0].linear", 0.09);
+        lightingShader.SetUniform1f("pointLights[0].quadratic", 0.032);
+        // point light 2
+        lightingShader.SetUniformVec3("pointLights[1].position", pointLightPositions[1]);
+        lightingShader.SetUniformVec3("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+        lightingShader.SetUniformVec3("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+        lightingShader.SetUniformVec3("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.SetUniform1f("pointLights[1].constant", 1.0f);
+        lightingShader.SetUniform1f("pointLights[1].linear", 0.09);
+        lightingShader.SetUniform1f("pointLights[1].quadratic", 0.032);
+        // point light 3
+        lightingShader.SetUniformVec3("pointLights[2].position", pointLightPositions[2]);
+        lightingShader.SetUniformVec3("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+        lightingShader.SetUniformVec3("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+        lightingShader.SetUniformVec3("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.SetUniform1f("pointLights[2].constant", 1.0f);
+        lightingShader.SetUniform1f("pointLights[2].linear", 0.09);
+        lightingShader.SetUniform1f("pointLights[2].quadratic", 0.032);
+        // point light 4
+        lightingShader.SetUniformVec3("pointLights[3].position", pointLightPositions[3]);
+        lightingShader.SetUniformVec3("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+        lightingShader.SetUniformVec3("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+        lightingShader.SetUniformVec3("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.SetUniform1f("pointLights[3].constant", 1.0f);
+        lightingShader.SetUniform1f("pointLights[3].linear", 0.09);
+        lightingShader.SetUniform1f("pointLights[3].quadratic", 0.032);
+        // spotLight
+        lightingShader.SetUniformVec3("spotLight.position", camera.m_Position);
+        lightingShader.SetUniformVec3("spotLight.direction", camera.m_Front);
+        lightingShader.SetUniformVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+        lightingShader.SetUniformVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+        lightingShader.SetUniformVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+        lightingShader.SetUniform1f("spotLight.constant", 1.0f);
+        lightingShader.SetUniform1f("spotLight.linear", 0.09);
+        lightingShader.SetUniform1f("spotLight.quadratic", 0.032);
+        lightingShader.SetUniform1f("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
+        lightingShader.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
+        // view/projection tranformation
+        lightingShader.SetUniformMat4("view", view);
+        lightingShader.SetUniformMat4("projection", projection);
+
+        // render cubes
+        glBindVertexArray(cubeVAO);
+        for (unsigned int i = 0; i < 10; i++)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            lightingShader.SetUniformMat4("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
+         // =================== lamp section =========================
+        lampShader.Use();
+
+        // Set uniform values
+        lampShader.SetUniformVec3("lightColor", 1.0f, 1.0f, 1.0f);
+        lampShader.SetUniformMat4("view", view);
+        lampShader.SetUniformMat4("projection", projection);
+
+        glBindVertexArray(lampVAO);
+        for (int i = 0; i < 4; i++)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, pointLightPositions[i]);
+            model = glm::scale(model, glm::vec3(0.2f));
+            lampShader.SetUniformMat4("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+       
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    glDeleteProgram(lampShader.GetID());
+    glDeleteProgram(lightingShader.GetID());
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteVertexArrays(1, &lampVAO);
+
+    glfwTerminate();
+    return 0;
+}
+
+void ProcessInput(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        camera.ProcessKeyboard(UP, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+        camera.ProcessKeyboard(DOWN, deltaTime);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+void mouse_callback(GLFWwindow* window, double xPos, double yPos)
+{
+    if (firstMouse)
+    {
+        lastX = xPos;
+        lastY = yPos;
+        firstMouse = false;
+    }
+    float xoffset = xPos - lastX;
+    float yoffset = lastY - yPos;
+    lastX = xPos;
+    lastY = yPos;
+
+    const float sensitivity = 0.1f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera.ProcessMouseScroll(yoffset);
+}
+
+
+
+// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
+// Debug program: F5 or Debug > Start Debugging menu
+
+// Tips for Getting Started: 
+//   1. Use the Solution Explorer window to add/manage files
+//   2. Use the Team Explorer window to connect to source control
+//   3. Use the Output window to see build output and other messages
+//   4. Use the Error List window to view errors
+//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
+//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
