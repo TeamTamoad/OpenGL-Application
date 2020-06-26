@@ -159,7 +159,7 @@ int main()
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.m_FOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
-        glm::vec3 lightPos = glm::vec3(sin(currentFrame) * 2.5, 1.8f, cos(currentFrame) * 2.5);
+        glm::vec3 lightPos = glm::vec3(sin(currentFrame * 2) * 2.5, 1.8f, cos(currentFrame * 2) * 2.5);
         // Set uniform values
         modelShader.SetUniformMat4("model", model);
         modelShader.SetUniformMat4("view", view);
