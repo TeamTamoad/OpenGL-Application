@@ -388,13 +388,13 @@ int main()
         // Update tranformation matrix
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.m_FOV), 800.0f / 600.0f, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), 800.0f / 600.0f, 0.1f, 100.0f);
 
         // Set uniform values
         lightingShader.SetUniform1i("material.diffuse", 0);
         lightingShader.SetUniform1i("material.specular", 1);
         lightingShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
-        lightingShader.SetUniformVec3("viewPos", camera.m_Position);
+        lightingShader.SetUniformVec3("viewPos", camera.mPosition);
 
         // directional light
         lightingShader.SetUniformVec3("dirLight.direction", 0.0f, -1.0f, 0.0f);
@@ -434,8 +434,8 @@ int main()
         lightingShader.SetUniform1f("pointLights[3].linear", 0.09);
         lightingShader.SetUniform1f("pointLights[3].quadratic", 0.032);
         // spotLight
-        lightingShader.SetUniformVec3("spotLight.position", camera.m_Position);
-        lightingShader.SetUniformVec3("spotLight.direction", camera.m_Front);
+        lightingShader.SetUniformVec3("spotLight.position", camera.mPosition);
+        lightingShader.SetUniformVec3("spotLight.direction", camera.mFront);
         lightingShader.SetUniformVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
         lightingShader.SetUniformVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
         lightingShader.SetUniformVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);

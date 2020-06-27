@@ -41,7 +41,7 @@ void main()
 	result += CalcPointLight(pointLight, norm, viewDir, diffMap, specMap);
 	result += ambient * diffMap;
 
-	FragColor = vec4(result, 1.0);
+	FragColor = vec4(result, 1.0) + vec4(vec3(gl_FragCoord.z), 1.0) * 0.95;
 }
 
 vec3 CalcPointLight(PointLight light, const vec3 normal, const vec3 viewDir, const vec3 diffMap, const vec3 specMap)

@@ -170,7 +170,7 @@ int main()
 
         // Update tranformation matrix
         glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.m_FOV), 800.0f / 600.0f, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), 800.0f / 600.0f, 0.1f, 100.0f);
 
         // Set uniform values
         shader.SetUniform1i("texImage", 0);

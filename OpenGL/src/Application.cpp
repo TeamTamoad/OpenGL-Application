@@ -158,7 +158,7 @@ int main()
         // Update tranformation matrix
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.m_FOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
         glm::vec3 lightPos = glm::vec3(sin(currentFrame) * 2.5, 1.8f, cos(currentFrame) * 2.5);
         // Set uniform values
         modelShader.SetUniformMat4("model", model);
@@ -166,7 +166,7 @@ int main()
         modelShader.SetUniformMat4("projection", projection);
         modelShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
         modelShader.SetUniformVec3("ambient", glm::vec3(0.1f));
-        modelShader.SetUniformVec3("viewPos", camera.m_Position);
+        modelShader.SetUniformVec3("viewPos", camera.mPosition);
 
         //point light
         modelShader.SetUniformVec3("pointLight.position", lightPos);
@@ -205,6 +205,11 @@ void ProcessInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        camera.mDoubleSpeed = true;
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
+        camera.mDoubleSpeed = false;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(FORWARD, deltaTime);
