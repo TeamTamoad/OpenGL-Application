@@ -186,6 +186,8 @@
     <None Include="res\shaders\color.vert" />
     <None Include="res\shaders\cube.frag" />
     <None Include="res\shaders\cube.vert" />
+    <None Include="res\shaders\deptTest.frag" />
+    <None Include="res\shaders\deptTest.vert" />
     <None Include="res\shaders\Gouraud.frag" />
     <None Include="res\shaders\Gouraud.vert" />
     <None Include="res\shaders\lamp.frag" />
