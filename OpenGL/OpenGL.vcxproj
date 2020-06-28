@@ -196,6 +196,7 @@
     <None Include="res\shaders\modelLoading.vert" />
     <None Include="res\shaders\shader.frag" />
     <None Include="res\shaders\shader.vert" />
+    <None Include="res\shaders\singleColor.frag" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\oldCodes\BasicLighting.txt" />

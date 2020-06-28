@@ -77,11 +77,12 @@ int main()
     std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << "\n\n";
 
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    glEnable(GL_STENCIL_TEST);
     stbi_set_flip_vertically_on_load(true);
 
     // Create Shader Program
     Shader shader = Shader("res/shaders/deptTest.vert", "res/shaders/deptTest.frag");
+    Shader outlineShader = Shader("res/shaders/deptTest.vert", "res/shaders/singleColor.frag");
     
     float cubeVertices[] = {
         // positions          // texture Coords
@@ -174,20 +175,33 @@ int main()
         // Handle input
         ProcessInput(window);
 
+        glEnable(GL_DEPTH_TEST);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
         shader.Use();
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
-        
-        shader.SetUniformMat4("model", model);
         shader.SetUniformMat4("view", view);
         shader.SetUniformMat4("projection", projection);
-        //shader.SetUniform1i("texture1", 0);
+        
+        // Draw plane
+        glStencilMask(0x00);
+        shader.SetUniformMat4("model", model);
+        shader.SetUniform1i("texture1", 1);
+        glBindVertexArray(planeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // Draw cubes
+        glStencilFunc(GL_ALWAYS, 1, 0xFF); // all fragments should pass the stencil test
+        glStencilMask(0xFF); // enable writing to the stencil buffer
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 0.01f, 0.0f));
+        shader.SetUniformMat4("model", model);
+        shader.SetUniform1i("texture1", 0);
         glBindVertexArray(cubeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -195,11 +209,30 @@ int main()
         shader.SetUniformMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        // Draw plane
-        //shader.SetUniform1i("texture1", 1);
-        glBindVertexArray(planeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        // Draw outline
+        outlineShader.Use();
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilMask(0x00);
+        glDisable(GL_DEPTH_TEST);
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(1.1f));
+        outlineShader.SetUniformMat4("model", model);
+        outlineShader.SetUniformMat4("view", view);
+        outlineShader.SetUniformMat4("projection", projection);
+        outlineShader.SetUniformVec3("color", 1.0f, 1.0f, 0.0f);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+        model = glm::translate(model, glm::vec3(0.0f, 0.01f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.1f));
+        outlineShader.SetUniformMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        glStencilMask(0xFF);
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glEnable(GL_DEPTH_TEST);
+       
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

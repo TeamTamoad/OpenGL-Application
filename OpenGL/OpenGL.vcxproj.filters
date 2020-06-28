@@ -104,6 +104,7 @@
     <None Include="res\shaders\lamp.vert" />
     <None Include="res\shaders\deptTest.vert" />
     <None Include="res\shaders\deptTest.frag" />
+    <None Include="res\shaders\singleColor.frag" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\oldCodes\BasicLighting.txt" />
