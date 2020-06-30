@@ -174,14 +174,20 @@
     <ClInclude Include="src\VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\images\blending_transparent_window.png" />
     <Image Include="res\images\container2.png" />
     <Image Include="res\images\container2_specular.png" />
+    <Image Include="res\images\grass.png" />
     <Image Include="res\images\lighting_maps_specular_color.png" />
+    <Image Include="res\images\marble.jpg" />
     <Image Include="res\images\matrix.jpg" />
     <Image Include="res\images\sample.png" />
     <Image Include="res\images\sample2.png" />
+    <Image Include="res\images\silver_metal.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shaders\blending.frag" />
+    <None Include="res\shaders\blending.vert" />
     <None Include="res\shaders\color.frag" />
     <None Include="res\shaders\color.vert" />
     <None Include="res\shaders\cube.frag" />

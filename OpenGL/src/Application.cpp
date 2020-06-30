@@ -25,8 +25,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void ProcessInput(GLFWwindow* window);
 
 // Settings
-const float SCR_WIDTH = 800;
-const float SCR_HEIGHT = 600;
+float SCR_WIDTH = 800;
+float SCR_HEIGHT = 600;
 
 // Camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -77,11 +77,10 @@ int main()
     std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << "\n\n";
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_STENCIL_TEST);
     stbi_set_flip_vertically_on_load(true);
 
     // Create Shader Program
-    Shader shader = Shader("res/shaders/deptTest.vert", "res/shaders/deptTest.frag");
+    Shader shader = Shader("res/shaders/blending.vert", "res/shaders/blending.frag");
     Shader outlineShader = Shader("res/shaders/deptTest.vert", "res/shaders/singleColor.frag");
     
     float cubeVertices[] = {
@@ -140,6 +139,24 @@ int main()
          5.0f, -0.5f, -5.0f,  2.0f, 2.0f
     };
 
+    float grassVertices[] = {
+        // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+        0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
+        0.0f, -0.5f,  0.0f,  0.0f,  0.0f,
+        1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
+
+        0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
+        1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
+        1.0f,  0.5f,  0.0f,  1.0f,  1.0f
+    };
+
+    std::vector<glm::vec3> positions;
+    positions.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
+    positions.push_back(glm::vec3(1.5f, 0.0f, 0.51f));
+    positions.push_back(glm::vec3(0.0f, 0.0f, 0.7f));
+    positions.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
+    positions.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
+
     // Cube VAO
     GLuint cubeVAO;
     glGenVertexArrays(1, &cubeVAO);
@@ -160,9 +177,21 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
+    // grass VAO
+    GLuint grassVAO;
+    glGenVertexArrays(1, &grassVAO);
+    glBindVertexArray(grassVAO);
+    VertexBuffer grassVBO = VertexBuffer(grassVertices, sizeof(grassVertices));
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
     // Texture
     Texture2D cubeTexture = Texture2D("res/images/container2.png", 0);
     Texture2D planeTexture = Texture2D("res/images/marble.jpg", 1);
+    Texture2D grassTexture = Texture2D("res/images/grass.png", 2);
+    grassTexture.SetBoarder(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
 
     // ================== Render Loop ===========================
     while (!glfwWindowShouldClose(window))
@@ -175,11 +204,8 @@ int main()
         // Handle input
         ProcessInput(window);
 
-        glEnable(GL_DEPTH_TEST);
-        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.Use();
         glm::mat4 model = glm::mat4(1.0f);
@@ -195,43 +221,25 @@ int main()
         glBindVertexArray(planeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        // Draw cubes
-        glStencilFunc(GL_ALWAYS, 1, 0xFF); // all fragments should pass the stencil test
-        glStencilMask(0xFF); // enable writing to the stencil buffer
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, 0.01f, 0.0f));
-        shader.SetUniformMat4("model", model);
-        shader.SetUniform1i("texture1", 0);
-        glBindVertexArray(cubeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        // Draw cubes and grass
+        for (size_t i = 0; i < positions.size(); i++)
+        {
+            glBindVertexArray(cubeVAO);
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(0.0f, 0.01f, 0.0f));
+            model = glm::translate(model, positions[i]);
+            shader.SetUniformMat4("model", model);
+            shader.SetUniform1i("texture1", 0);
+            if (i % 2== 1)
+                glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        shader.SetUniformMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+            glBindVertexArray(grassVAO);
+            model = glm::translate(model, glm::vec3(-0.5f, 0.0f, 0.51f));
+            shader.SetUniformMat4("model", model);
 
-        // Draw outline
-        outlineShader.Use();
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        glStencilMask(0x00);
-        glDisable(GL_DEPTH_TEST);
-        model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(1.1f));
-        outlineShader.SetUniformMat4("model", model);
-        outlineShader.SetUniformMat4("view", view);
-        outlineShader.SetUniformMat4("projection", projection);
-        outlineShader.SetUniformVec3("color", 1.0f, 1.0f, 0.0f);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        model = glm::translate(model, glm::vec3(0.0f, 0.01f, 0.0f));
-        model = glm::scale(model, glm::vec3(1.1f));
-        outlineShader.SetUniformMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        glStencilMask(0xFF);
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glEnable(GL_DEPTH_TEST);
+            shader.SetUniform1i("texture1", 2);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+        }
        
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -271,6 +279,8 @@ void ProcessInput(GLFWwindow* window)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+    SCR_WIDTH = width;
+    SCR_HEIGHT = height;
 }
 
 void mouse_callback(GLFWwindow* window, double xPos, double yPos)

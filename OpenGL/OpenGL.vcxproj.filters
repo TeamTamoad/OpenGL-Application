@@ -88,6 +88,18 @@
     <Image Include="res\images\sample2.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\images\marble.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\silver_metal.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\grass.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\blending_transparent_window.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\color.frag" />
@@ -105,6 +117,8 @@
     <None Include="res\shaders\deptTest.vert" />
     <None Include="res\shaders\deptTest.frag" />
     <None Include="res\shaders\singleColor.frag" />
+    <None Include="res\shaders\blending.vert" />
+    <None Include="res\shaders\blending.frag" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\oldCodes\BasicLighting.txt" />

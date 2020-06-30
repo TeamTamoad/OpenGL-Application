@@ -7,22 +7,22 @@ Texture2D::Texture2D(const char* source, const GLuint& slot) : mSlot(slot), mID(
 	int width, height, nrChannels;
 	unsigned char* image;
 
-	image = stbi_load(source, &width, &height, &nrChannels, 3);
+	image = stbi_load(source, &width, &height, &nrChannels, 0);
 	if (image)
 	{
-		/*GLenum format = GL_RGB;
+		GLenum format = GL_RGB;
 		if (nrChannels == 1)
 			format = GL_RED;
 		else if (nrChannels == 3)
 			format = GL_RGB;
 		else if (nrChannels == 4)
-			format = GL_RGBA;*/
+			format = GL_RGBA;
 
 		GLCall(glGenTextures(1, &mID));
 		GLCall(glActiveTexture(GL_TEXTURE0 + mSlot));
 		GLCall(glBindTexture(GL_TEXTURE_2D, mID));
 
-		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image));
+		GLCall(glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, image));
 		GLCall(glGenerateMipmap(GL_TEXTURE_2D));
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -37,4 +37,12 @@ Texture2D::Texture2D(const char* source, const GLuint& slot) : mSlot(slot), mID(
 	}
 
 	stbi_image_free(image);
+}
+
+void Texture2D::SetBoarder(GLint paramS, GLint paramT)
+{
+	glActiveTexture(GL_TEXTURE0 + mSlot);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, paramS);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, paramT);
+	glActiveTexture(GL_TEXTURE0);
 }
