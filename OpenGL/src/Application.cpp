@@ -9,6 +9,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <algorithm>
+#include <map>
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
@@ -76,7 +78,6 @@ int main()
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
     std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << "\n\n";
 
-    glEnable(GL_DEPTH_TEST);
     stbi_set_flip_vertically_on_load(true);
 
     // Create Shader Program
@@ -139,7 +140,7 @@ int main()
          5.0f, -0.5f, -5.0f,  2.0f, 2.0f
     };
 
-    float grassVertices[] = {
+    float windowVertices[] = {
         // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
         0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
         0.0f, -0.5f,  0.0f,  0.0f,  0.0f,
@@ -156,6 +157,12 @@ int main()
     positions.push_back(glm::vec3(0.0f, 0.0f, 0.7f));
     positions.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
     positions.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
+
+    std::map<float, glm::vec3, std::greater<float>> sortedPos;
+    for (glm::vec3 pos : positions)
+    {
+        sortedPos[glm::length(pos - camera.mPosition)] = pos;
+    }
 
     // Cube VAO
     GLuint cubeVAO;
@@ -177,11 +184,11 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
-    // grass VAO
-    GLuint grassVAO;
-    glGenVertexArrays(1, &grassVAO);
-    glBindVertexArray(grassVAO);
-    VertexBuffer grassVBO = VertexBuffer(grassVertices, sizeof(grassVertices));
+    // window VAO
+    GLuint windowVAO;
+    glGenVertexArrays(1, &windowVAO);
+    glBindVertexArray(windowVAO);
+    VertexBuffer windowVBO = VertexBuffer(windowVertices, sizeof(windowVertices));
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
@@ -190,8 +197,12 @@ int main()
     // Texture
     Texture2D cubeTexture = Texture2D("res/images/container2.png", 0);
     Texture2D planeTexture = Texture2D("res/images/marble.jpg", 1);
-    Texture2D grassTexture = Texture2D("res/images/grass.png", 2);
-    grassTexture.SetBoarder(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
+    Texture2D windowTexture = Texture2D("res/images/blending_transparent_window.png", 2);
+    windowTexture.SetBoarder(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // ================== Render Loop ===========================
     while (!glfwWindowShouldClose(window))
@@ -221,7 +232,7 @@ int main()
         glBindVertexArray(planeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        // Draw cubes and grass
+        // Draw cubes
         for (size_t i = 0; i < positions.size(); i++)
         {
             glBindVertexArray(cubeVAO);
@@ -231,16 +242,28 @@ int main()
             shader.SetUniformMat4("model", model);
             shader.SetUniform1i("texture1", 0);
             if (i % 2== 1)
-                glDrawArrays(GL_TRIANGLES, 0, 36);
+                glDrawArrays(GL_TRIANGLES, 0, 36); 
+        }
 
-            glBindVertexArray(grassVAO);
+        std::map<float, glm::vec3, std::greater<float>> sortedPos;
+        for (glm::vec3 pos : positions)
+        {
+            sortedPos[glm::length(pos - camera.mPosition)] = pos;
+        }
+
+        // Draw windows
+        for (std::pair<float, glm::vec3> pos : sortedPos)
+        {
+            glBindVertexArray(windowVAO);
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(0.0f, 0.01f, 0.0f));
+            model = glm::translate(model, pos.second);
             model = glm::translate(model, glm::vec3(-0.5f, 0.0f, 0.51f));
             shader.SetUniformMat4("model", model);
-
             shader.SetUniform1i("texture1", 2);
             glDrawArrays(GL_TRIANGLES, 0, 6);
+
         }
-       
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
