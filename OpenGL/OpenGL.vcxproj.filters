@@ -119,6 +119,10 @@
     <None Include="res\shaders\singleColor.frag" />
     <None Include="res\shaders\blending.vert" />
     <None Include="res\shaders\blending.frag" />
+    <None Include="res\shaders\frambuffer.vert" />
+    <None Include="res\shaders\frambuffer.frag" />
+    <None Include="res\shaders\frambuffer_screen.vert" />
+    <None Include="res\shaders\frambuffer_screen.frag" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\oldCodes\BasicLighting.txt" />

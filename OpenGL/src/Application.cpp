@@ -81,8 +81,8 @@ int main()
     stbi_set_flip_vertically_on_load(true);
 
     // Create Shader Program
-    Shader shader = Shader("res/shaders/blending.vert", "res/shaders/blending.frag");
-    Shader outlineShader = Shader("res/shaders/deptTest.vert", "res/shaders/singleColor.frag");
+    Shader objectShader = Shader("res/shaders/frambuffer.vert", "res/shaders/frambuffer.frag");
+    Shader screenShader = Shader("res/shaders/frambuffer_screen.vert", "res/shaders/frambuffer_screen.frag");
     
     float cubeVertices[] = {
         // positions          // texture Coords
@@ -151,18 +151,23 @@ int main()
         1.0f,  0.5f,  0.0f,  1.0f,  1.0f
     };
 
+    float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };
+
     std::vector<glm::vec3> positions;
     positions.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
     positions.push_back(glm::vec3(1.5f, 0.0f, 0.51f));
     positions.push_back(glm::vec3(0.0f, 0.0f, 0.7f));
     positions.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
     positions.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
-
-    std::map<float, glm::vec3, std::greater<float>> sortedPos;
-    for (glm::vec3 pos : positions)
-    {
-        sortedPos[glm::length(pos - camera.mPosition)] = pos;
-    }
 
     // Cube VAO
     GLuint cubeVAO;
@@ -194,18 +199,63 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 
+    // screen quad VAO
+    GLuint quadVAO;
+    glGenVertexArrays(1, &quadVAO);
+    glBindVertexArray(quadVAO);
+    VertexBuffer quadVBO = VertexBuffer(quadVertices, sizeof(quadVertices));
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    
     // Texture
     Texture2D cubeTexture = Texture2D("res/images/container2.png", 0);
     Texture2D planeTexture = Texture2D("res/images/marble.jpg", 1);
     Texture2D windowTexture = Texture2D("res/images/blending_transparent_window.png", 2);
     windowTexture.SetBoarder(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
 
+    // FRAME BUFFER CONFIGURATION
+    // --------------------------
+    GLuint frambuffer;
+    glGenFramebuffers(1, &frambuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, frambuffer);
+
+    GLuint textureColorbuffer;
+    glGenTextures(1, &textureColorbuffer);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+    glActiveTexture(GL_TEXTURE0);
+
+    GLuint RBO;
+    glGenRenderbuffers(1, &RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMBUFFER:: Frambuffer is not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    std::map<float, int, std::greater<float>> sortedPos;
+    for (int i = 0; i < positions.size(); i++)
+    {
+        sortedPos[glm::length(positions[i] - camera.mPosition)] = i;
+    }
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_CULL_FACE);
 
-    // ================== Render Loop ===========================
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    // RENDER LOOP
+    // -----------
     while (!glfwWindowShouldClose(window))
     {
         // Timing logic
@@ -216,55 +266,64 @@ int main()
         // Handle input
         ProcessInput(window);
 
+        glBindFramebuffer(GL_FRAMEBUFFER, frambuffer);
+        glEnable(GL_DEPTH_TEST);
+
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader.Use();
+        objectShader.Use();
         glm::mat4 model = glm::mat4(1.0f);
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
-        shader.SetUniformMat4("view", view);
-        shader.SetUniformMat4("projection", projection);
+        objectShader.SetUniformMat4("view", view);
+        objectShader.SetUniformMat4("projection", projection);
         
-        // Draw plane
-        glStencilMask(0x00);
-        shader.SetUniformMat4("model", model);
-        shader.SetUniform1i("texture1", 1);
+        // Draw floor
+        objectShader.SetUniformMat4("model", model);
+        objectShader.SetUniform1i("texture1", 1);
         glBindVertexArray(planeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // Draw cubes
+        glEnable(GL_CULL_FACE);
         for (size_t i = 0; i < positions.size(); i++)
         {
             glBindVertexArray(cubeVAO);
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(0.0f, 0.01f, 0.0f));
             model = glm::translate(model, positions[i]);
-            shader.SetUniformMat4("model", model);
-            shader.SetUniform1i("texture1", 0);
+            objectShader.SetUniformMat4("model", model);
+            objectShader.SetUniform1i("texture1", 0);
             if (i % 2== 1)
                 glDrawArrays(GL_TRIANGLES, 0, 36); 
         }
 
-        std::map<float, glm::vec3, std::greater<float>> sortedPos;
-        for (glm::vec3 pos : positions)
-        {
-            sortedPos[glm::length(pos - camera.mPosition)] = pos;
-        }
-
+        glDisable(GL_CULL_FACE);
         // Draw windows
-        for (std::pair<float, glm::vec3> pos : sortedPos)
+        for (std::pair<float, int> pos : sortedPos)
         {
             glBindVertexArray(windowVAO);
             model = glm::mat4(1.0f);
             model = glm::translate(model, glm::vec3(0.0f, 0.01f, 0.0f));
-            model = glm::translate(model, pos.second);
+            model = glm::translate(model, positions[pos.second]);
             model = glm::translate(model, glm::vec3(-0.5f, 0.0f, 0.51f));
-            shader.SetUniformMat4("model", model);
-            shader.SetUniform1i("texture1", 2);
+            objectShader.SetUniformMat4("model", model);
+            objectShader.SetUniform1i("texture1", 2);
             glDrawArrays(GL_TRIANGLES, 0, 6);
-
         }
+        
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDisable(GL_DEPTH_TEST);
+
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        screenShader.Use();
+        glBindVertexArray(quadVAO);
+        screenShader.SetUniform1i("screenTexture", 4);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

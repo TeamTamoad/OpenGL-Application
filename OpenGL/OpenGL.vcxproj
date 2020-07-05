@@ -194,6 +194,10 @@
     <None Include="res\shaders\cube.vert" />
     <None Include="res\shaders\deptTest.frag" />
     <None Include="res\shaders\deptTest.vert" />
+    <None Include="res\shaders\frambuffer.frag" />
+    <None Include="res\shaders\frambuffer.vert" />
+    <None Include="res\shaders\frambuffer_screen.frag" />
+    <None Include="res\shaders\frambuffer_screen.vert" />
     <None Include="res\shaders\Gouraud.frag" />
     <None Include="res\shaders\Gouraud.vert" />
     <None Include="res\shaders\lamp.frag" />
