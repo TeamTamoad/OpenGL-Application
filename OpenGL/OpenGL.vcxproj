@@ -184,6 +184,12 @@
     <Image Include="res\images\sample.png" />
     <Image Include="res\images\sample2.png" />
     <Image Include="res\images\silver_metal.jpg" />
+    <Image Include="res\images\skybox\back.jpg" />
+    <Image Include="res\images\skybox\bottom.jpg" />
+    <Image Include="res\images\skybox\front.jpg" />
+    <Image Include="res\images\skybox\left.jpg" />
+    <Image Include="res\images\skybox\right.jpg" />
+    <Image Include="res\images\skybox\top.jpg" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\blending.frag" />
@@ -192,6 +198,8 @@
     <None Include="res\shaders\color.vert" />
     <None Include="res\shaders\cube.frag" />
     <None Include="res\shaders\cube.vert" />
+    <None Include="res\shaders\cubemap.frag" />
+    <None Include="res\shaders\cubemap.vert" />
     <None Include="res\shaders\deptTest.frag" />
     <None Include="res\shaders\deptTest.vert" />
     <None Include="res\shaders\frambuffer.frag" />
@@ -204,6 +212,10 @@
     <None Include="res\shaders\lamp.vert" />
     <None Include="res\shaders\modelLoading.frag" />
     <None Include="res\shaders\modelLoading.vert" />
+    <None Include="res\shaders\reflectObject.frag" />
+    <None Include="res\shaders\reflectObject.vert" />
+    <None Include="res\shaders\refractObject.frag" />
+    <None Include="res\shaders\refractObject.vert" />
     <None Include="res\shaders\shader.frag" />
     <None Include="res\shaders\shader.vert" />
     <None Include="res\shaders\singleColor.frag" />

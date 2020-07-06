@@ -65,6 +65,7 @@ void main()
     }
     else
     {
+        // identical kernel
         kernel = float[](
             0, 0, 0,
             0, 1, 0,

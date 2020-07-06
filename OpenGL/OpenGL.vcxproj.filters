@@ -100,6 +100,24 @@
     <Image Include="res\images\blending_transparent_window.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\images\skybox\back.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\skybox\bottom.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\skybox\front.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\skybox\left.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\skybox\right.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\skybox\top.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\color.frag" />
@@ -123,6 +141,12 @@
     <None Include="res\shaders\frambuffer.frag" />
     <None Include="res\shaders\frambuffer_screen.vert" />
     <None Include="res\shaders\frambuffer_screen.frag" />
+    <None Include="res\shaders\cubemap.vert" />
+    <None Include="res\shaders\cubemap.frag" />
+    <None Include="res\shaders\reflectObject.vert" />
+    <None Include="res\shaders\reflectObject.frag" />
+    <None Include="res\shaders\refractObject.vert" />
+    <None Include="res\shaders\refractObject.frag" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\oldCodes\BasicLighting.txt" />
