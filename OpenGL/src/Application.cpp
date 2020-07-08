@@ -82,7 +82,6 @@ int main()
     stbi_set_flip_vertically_on_load(true);
 
     // Create Shader Program
-    Shader objectShader("res/shaders/refractObject.vert", "res/shaders/refractObject.frag");
     Shader reflectShader("res/shaders/reflectObject.vert", "res/shaders/reflectObject.frag");
     Shader refractShader("res/shaders/refractObject.vert", "res/shaders/refractObject.frag");
     Shader skyboxShader("res/shaders/cubemap.vert", "res/shaders/cubemap.frag");
@@ -219,6 +218,7 @@ int main()
          1.0f, -1.0f,  1.0f
     };
 
+
     // VERTEX ARRAY OBJECT CONFIGURATION
     // ---------------------------------
     // Cube VAO
@@ -240,7 +240,29 @@ int main()
     VertexBuffer skyboxVBO(skyboxVertices, sizeof(skyboxVertices));
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    
+
+
+    // UNIFORM BUFFER CONFIGURATION
+    // ----------------------------
+    GLuint MatricesUBO, FragUBO;
+    glGenBuffers(1, &MatricesUBO);
+    glGenBuffers(1, &FragUBO);
+
+    glBindBuffer(GL_UNIFORM_BUFFER, MatricesUBO);
+    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, FragUBO);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::vec4) + sizeof(int), NULL, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, MatricesUBO);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, FragUBO);
+
+    glUniformBlockBinding(reflectShader.GetID(), glGetUniformBlockIndex(reflectShader.GetID(), "Matrices"), 0);
+    glUniformBlockBinding(refractShader.GetID(), glGetUniformBlockIndex(refractShader.GetID(), "Matrices"), 0);
+    glUniformBlockBinding(reflectShader.GetID(), glGetUniformBlockIndex(reflectShader.GetID(), "FragUniform"), 1);
+    glUniformBlockBinding(refractShader.GetID(), glGetUniformBlockIndex(refractShader.GetID(), "FragUniform"), 1);
+
+
     // TEXTURE CONFIGURATION
     // ---------------------
     std::vector<std::string> skyboxSources = {
@@ -261,9 +283,11 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glEnable(GL_PROGRAM_POINT_SIZE);
     //glEnable(GL_CULL_FACE);
 
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    int red = 0;
 
     // RENDER LOOP
     // -----------
@@ -279,25 +303,27 @@ int main()
 
         glEnable(GL_DEPTH_TEST);
 
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(0.9f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(currentFrame * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        //model = glm::rotate(model, glm::radians(currentFrame * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
-        
+        glm::vec4 camPos(camera.mPosition, 1.0f);
+        glBindBuffer(GL_UNIFORM_BUFFER, MatricesUBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(view));
+        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projection));
+        glBindBuffer(GL_UNIFORM_BUFFER, FragUBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::vec4), glm::value_ptr(camPos));
+        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::vec4), sizeof(int), &red);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
         reflectShader.Use();
-        reflectShader.SetUniformMat4("view", view);
-        reflectShader.SetUniformMat4("projection", projection);
-        reflectShader.SetUniformVec3("cameraPos", camera.mPosition);
         reflectShader.SetUniform1i("cubemapTex", 0);
 
         refractShader.Use();
-        refractShader.SetUniformMat4("view", view);
-        refractShader.SetUniformMat4("projection", projection);
-        refractShader.SetUniformVec3("cameraPos", camera.mPosition);
         refractShader.SetUniform1i("cubemapTex", 0);
 
 
@@ -312,7 +338,7 @@ int main()
         refractShader.Use();
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(currentFrame * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        //model = glm::rotate(model, glm::radians(currentFrame * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         refractShader.SetUniformMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
