@@ -147,6 +147,9 @@
     <None Include="res\shaders\reflectObject.frag" />
     <None Include="res\shaders\refractObject.vert" />
     <None Include="res\shaders\refractObject.frag" />
+    <None Include="res\shaders\current\points.frag" />
+    <None Include="res\shaders\current\points.vert" />
+    <None Include="res\shaders\current\points.geom" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\oldCodes\BasicLighting.txt" />

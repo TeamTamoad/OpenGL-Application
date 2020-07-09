@@ -81,12 +81,21 @@ int main()
 
     stbi_set_flip_vertically_on_load(true);
 
-    // Create Shader Program
-    Shader reflectShader("res/shaders/reflectObject.vert", "res/shaders/reflectObject.frag");
-    Shader refractShader("res/shaders/refractObject.vert", "res/shaders/refractObject.frag");
-    Shader skyboxShader("res/shaders/cubemap.vert", "res/shaders/cubemap.frag");
+    // SHADER PROGRAM CONFIGURATION
+    // ----------------------------
+    Shader pointShader("res/shaders/current/points.vert", "res/shaders/current/points.frag");
+    pointShader.AddShader(GL_GEOMETRY_SHADER, "res/shaders/current/points.geom");
 
     // DATA SECTION
+    // ------------
+    float pointVertices[] = {
+    //Position    //Color
+    -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // top-left
+     0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // top-right
+     0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom-right
+    -0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // bottom-left
+    };
+
     float cubeVertices[] = {
        //Position             Normal 
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
@@ -231,63 +240,31 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    
-    // skybox VAO
-    GLuint skyboxVAO;
-    glGenVertexArrays(1, &skyboxVAO);
-    glBindVertexArray(skyboxVAO);
 
-    VertexBuffer skyboxVBO(skyboxVertices, sizeof(skyboxVertices));
+    // Points VAO
+    GLuint pointVAO;
+    glGenVertexArrays(1, &pointVAO);
+    glBindVertexArray(pointVAO);
+
+    VertexBuffer pointVBO(pointVertices, sizeof(pointVertices));
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-
-    // UNIFORM BUFFER CONFIGURATION
-    // ----------------------------
-    GLuint MatricesUBO, FragUBO;
-    glGenBuffers(1, &MatricesUBO);
-    glGenBuffers(1, &FragUBO);
-
-    glBindBuffer(GL_UNIFORM_BUFFER, MatricesUBO);
-    glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, FragUBO);
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::vec4) + sizeof(int), NULL, GL_STATIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-    glBindBufferBase(GL_UNIFORM_BUFFER, 0, MatricesUBO);
-    glBindBufferBase(GL_UNIFORM_BUFFER, 1, FragUBO);
-
-    glUniformBlockBinding(reflectShader.GetID(), glGetUniformBlockIndex(reflectShader.GetID(), "Matrices"), 0);
-    glUniformBlockBinding(refractShader.GetID(), glGetUniformBlockIndex(refractShader.GetID(), "Matrices"), 0);
-    glUniformBlockBinding(reflectShader.GetID(), glGetUniformBlockIndex(reflectShader.GetID(), "FragUniform"), 1);
-    glUniformBlockBinding(refractShader.GetID(), glGetUniformBlockIndex(refractShader.GetID(), "FragUniform"), 1);
-
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
 
     // TEXTURE CONFIGURATION
-    // ---------------------
-    std::vector<std::string> skyboxSources = {
-       "res/images/skybox/right.jpg",
-       "res/images/skybox/left.jpg",
-       "res/images/skybox/top.jpg",
-       "res/images/skybox/bottom.jpg",
-       "res/images/skybox/front.jpg",
-       "res/images/skybox/back.jpg"
-    };
+    // ---------------------   
 
-    Texture2D cubeTexture("res/images/container2.png", 0);
-    Texture2D planeTexture("res/images/marble.jpg", 1);
-    Texture2D windowTexture("res/images/blending_transparent_window.png", 2);
-    windowTexture.SetBoarder(GL_CLAMP_TO_BORDER, GL_CLAMP_TO_BORDER);
-    GLuint skyCubeMapTex = loadCubeMap(skyboxSources);
 
+    // OpenGL CONFIGURATION
+    //---------------------
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glEnable(GL_PROGRAM_POINT_SIZE);
     //glEnable(GL_CULL_FACE);
-
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    int red = 0;
+
 
     // RENDER LOOP
     // -----------
@@ -301,59 +278,12 @@ int main()
         // Handle input
         ProcessInput(window);
 
-        glEnable(GL_DEPTH_TEST);
-
-        glClearColor(0.9f, 0.1f, 0.1f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        
-        glm::mat4 model = glm::mat4(1.0f);
-        //model = glm::rotate(model, glm::radians(currentFrame * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
-        glm::vec4 camPos(camera.mPosition, 1.0f);
-        glBindBuffer(GL_UNIFORM_BUFFER, MatricesUBO);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), glm::value_ptr(view));
-        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), glm::value_ptr(projection));
-        glBindBuffer(GL_UNIFORM_BUFFER, FragUBO);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::vec4), glm::value_ptr(camPos));
-        glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::vec4), sizeof(int), &red);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-        reflectShader.Use();
-        reflectShader.SetUniform1i("cubemapTex", 0);
-
-        refractShader.Use();
-        refractShader.SetUniform1i("cubemapTex", 0);
-
-
-        // Draw cubes
-        reflectShader.Use();
-        reflectShader.SetUniformMat4("model", model);
-        glBindVertexArray(cubeVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyCubeMapTex);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        refractShader.Use();
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        //model = glm::rotate(model, glm::radians(currentFrame * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        refractShader.SetUniformMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-
-        // Draw skybox
-        glDepthFunc(GL_LEQUAL);
-        skyboxShader.Use();
-        view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-        skyboxShader.SetUniformMat4("view", view);
-        skyboxShader.SetUniformMat4("projection", projection);
-        skyboxShader.SetUniform1i("cubemapTex", 0);
-        glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyCubeMapTex);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthFunc(GL_LESS);
+        pointShader.Use();
+        glBindVertexArray(pointVAO);
+        glDrawArrays(GL_POINTS, 0, 4);
 
 
         glfwSwapBuffers(window);

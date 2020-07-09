@@ -24,6 +24,9 @@ public:
     void Use() const;
     void Unuse() const;
 
+    // Add more shaders
+    void AddShader(const GLenum& type, const std::string& sourcePath);
+
     // utility uniform functions
     void SetUniform1i(const std::string& name, int value) const;
     void SetUniform1f(const std::string& name, float value) const;
