@@ -213,8 +213,8 @@
     <None Include="res\shaders\current\points.geom" />
     <None Include="res\shaders\lamp.frag" />
     <None Include="res\shaders\lamp.vert" />
-    <None Include="res\shaders\modelLoading.frag" />
-    <None Include="res\shaders\modelLoading.vert" />
+    <None Include="res\shaders\model.frag" />
+    <None Include="res\shaders\model.vert" />
     <None Include="res\shaders\reflectObject.frag" />
     <None Include="res\shaders\reflectObject.vert" />
     <None Include="res\shaders\refractObject.frag" />

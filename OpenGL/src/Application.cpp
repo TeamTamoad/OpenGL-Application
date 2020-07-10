@@ -83,8 +83,7 @@ int main()
 
     // SHADER PROGRAM CONFIGURATION
     // ----------------------------
-    Shader pointShader("res/shaders/current/points.vert", "res/shaders/current/points.frag");
-    pointShader.AddShader(GL_GEOMETRY_SHADER, "res/shaders/current/points.geom");
+    Shader modelShader("res/shaders/model.vert", "res/shaders/model.frag");
 
     // DATA SECTION
     // ------------
@@ -252,6 +251,7 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
 
+    Model backpack("F:/Visual Studio File/LearnOpenGL/Models/backpack/backpack.obj");
     // TEXTURE CONFIGURATION
     // ---------------------   
 
@@ -281,9 +281,27 @@ int main()
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        pointShader.Use();
-        glBindVertexArray(pointVAO);
-        glDrawArrays(GL_POINTS, 0, 4);
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
+
+        // Set uniform values
+        modelShader.Use();
+        modelShader.SetUniformMat4("model", model);
+        modelShader.SetUniformMat4("view", view);
+        modelShader.SetUniformMat4("projection", projection);
+        modelShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
+        modelShader.SetUniform1f("time", currentFrame);
+        modelShader.SetUniformVec3("ambient", glm::vec3(0.1f));
+        modelShader.SetUniformVec3("viewPos", camera.mPosition);
+
+        //point light
+        modelShader.SetUniformVec3("pointLight.position", lightPos);
+        modelShader.SetUniformVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
+        modelShader.SetUniform1f("pointLight.linear", 0.07f);
+        modelShader.SetUniform1f("pointLight.quadratic", 0.017f);
+
+        backpack.Draw(modelShader);
 
 
         glfwSwapBuffers(window);

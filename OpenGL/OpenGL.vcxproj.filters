@@ -122,8 +122,6 @@
   <ItemGroup>
     <None Include="res\shaders\color.frag" />
     <None Include="res\shaders\color.vert" />
-    <None Include="res\shaders\modelLoading.frag" />
-    <None Include="res\shaders\modelLoading.vert" />
     <None Include="res\shaders\cube.frag" />
     <None Include="res\shaders\cube.vert" />
     <None Include="res\shaders\Gouraud.frag" />
@@ -150,6 +148,8 @@
     <None Include="res\shaders\current\points.frag" />
     <None Include="res\shaders\current\points.vert" />
     <None Include="res\shaders\current\points.geom" />
+    <None Include="res\shaders\model.frag" />
+    <None Include="res\shaders\model.vert" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\oldCodes\BasicLighting.txt" />
