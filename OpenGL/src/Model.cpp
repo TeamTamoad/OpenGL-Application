@@ -5,10 +5,16 @@ Model::Model(const std::string& path, bool gamma) : gammaCorrection(gamma)
 	loadModel(path);
 }
 
-void Model::Draw(const Shader& shader)
+void Model::Draw(const Shader& shader) const
 {
 	for (int i = 0; i < meshes.size(); i++)
 		meshes[i].Draw(shader);
+}
+
+void Model::DrawTextureless(const Shader& shader) const
+{
+	for (int i = 0; i < meshes.size(); i++)
+		meshes[i].DrawTextureless(shader);
 }
 
 void Model::loadModel(const std::string& path)

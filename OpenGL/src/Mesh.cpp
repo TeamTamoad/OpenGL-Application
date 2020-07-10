@@ -32,6 +32,13 @@ void Mesh::Draw(const Shader& shader) const
 	glBindVertexArray(0);
 }
 
+void Mesh::DrawTextureless(const Shader& shader) const
+{
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
+
 void Mesh::setUpMesh()
 {
 	glGenVertexArrays(1, &VAO);

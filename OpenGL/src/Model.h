@@ -14,7 +14,8 @@ public:
     bool gammaCorrection;
 
     Model(const std::string& path, bool gamma = false);
-    void Draw(const Shader& shader);
+    void Draw(const Shader& shader) const;
+    void DrawTextureless(const Shader& shader) const;
 
 private:
     void loadModel(const std::string& path);

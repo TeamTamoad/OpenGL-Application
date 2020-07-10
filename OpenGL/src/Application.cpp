@@ -84,6 +84,10 @@ int main()
     // SHADER PROGRAM CONFIGURATION
     // ----------------------------
     Shader modelShader("res/shaders/model.vert", "res/shaders/model.frag");
+    //modelShader.AddShader(GL_GEOMETRY_SHADER, "res/shaders/explode.geom");
+    Shader normalVisualShader("res/shaders/normal_visualize.vert", "res/shaders/singleColor.frag");
+    normalVisualShader.AddShader(GL_GEOMETRY_SHADER, "res/shaders/normal_visualize.geom");
+    
 
     // DATA SECTION
     // ------------
@@ -259,8 +263,8 @@ int main()
     // OpenGL CONFIGURATION
     //---------------------
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glEnable(GL_BLEND);
+    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     //glEnable(GL_PROGRAM_POINT_SIZE);
     //glEnable(GL_CULL_FACE);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -282,6 +286,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(model, glm::radians(currentFrame * 12.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
 
@@ -291,18 +296,26 @@ int main()
         modelShader.SetUniformMat4("view", view);
         modelShader.SetUniformMat4("projection", projection);
         modelShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
-        modelShader.SetUniform1f("time", currentFrame);
-        modelShader.SetUniformVec3("ambient", glm::vec3(0.1f));
+        //modelShader.SetUniform1f("time", currentFrame);
+        modelShader.SetUniformVec3("ambient", glm::vec3(0.5f));
         modelShader.SetUniformVec3("viewPos", camera.mPosition);
 
         //point light
         modelShader.SetUniformVec3("pointLight.position", lightPos);
-        modelShader.SetUniformVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
+        modelShader.SetUniformVec3("pointLight.diffuse", 0.0f, 0.0f, 0.0f);
         modelShader.SetUniform1f("pointLight.linear", 0.07f);
         modelShader.SetUniform1f("pointLight.quadratic", 0.017f);
 
         backpack.Draw(modelShader);
 
+        //------------------------
+        normalVisualShader.Use();
+        normalVisualShader.SetUniformMat4("model", model);
+        normalVisualShader.SetUniformMat4("view", view);
+        normalVisualShader.SetUniformMat4("projection", projection);
+        normalVisualShader.SetUniformVec3("color", glm::vec3(1.0f, 1.0f, 0.0f));
+
+        backpack.DrawTextureless(normalVisualShader);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

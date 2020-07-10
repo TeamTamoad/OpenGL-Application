@@ -150,6 +150,9 @@
     <None Include="res\shaders\current\points.geom" />
     <None Include="res\shaders\model.frag" />
     <None Include="res\shaders\model.vert" />
+    <None Include="res\shaders\explode.geom" />
+    <None Include="res\shaders\normal_visualize.geom" />
+    <None Include="res\shaders\normal_visualize.vert" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\oldCodes\BasicLighting.txt" />
