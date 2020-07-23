@@ -148,6 +148,30 @@ void Shader::SetUniformVec3(const std::string& name, const glm::vec3& vector) co
 	}
 }
 
+void Shader::SetUniformVec2(const std::string& name, const float& x, const float& y) const
+{
+	GLint location = glGetUniformLocation(mID, name.c_str());
+	if (location >= 0)
+		glUniform2f(location, x, y);
+	else
+	{
+		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << std::endl;
+		ASSERT(false);
+	}
+}
+
+void Shader::SetUniformVec2(const std::string& name, const glm::vec2& vector) const
+{
+	GLint location = glGetUniformLocation(mID, name.c_str());
+	if (location >= 0)
+		glUniform2f(location, vector.x, vector.y);
+	else
+	{
+		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << std::endl;
+		ASSERT(false);
+	}
+}
+
 GLuint Shader::GetID() const {
 	return mID;
 }

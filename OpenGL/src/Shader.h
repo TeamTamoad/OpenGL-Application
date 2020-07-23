@@ -33,6 +33,8 @@ public:
     void SetUniformMat4(const std::string& name, const glm::mat4& matrix) const;
     void SetUniformVec3(const std::string& name, const float& x, const float& y, const float& z) const;
     void SetUniformVec3(const std::string& name, const glm::vec3& vector) const;
+    void SetUniformVec2(const std::string& name, const float& x, const float& y) const;
+    void SetUniformVec2(const std::string& name, const glm::vec2& vector) const;
     GLuint GetID() const;
 
 private:

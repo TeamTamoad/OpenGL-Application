@@ -36,6 +36,7 @@ public:
 	Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, const std::vector<Texture>& textures);
 	void Draw(const Shader& shader) const;
 	void DrawTextureless(const Shader& shader) const;
+	GLuint GetVAO() const;
 
 private:
 	VertexBuffer VBO;

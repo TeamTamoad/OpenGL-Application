@@ -39,6 +39,11 @@ void Mesh::DrawTextureless(const Shader& shader) const
 	glBindVertexArray(0);
 }
 
+GLuint Mesh::GetVAO() const
+{
+	return VAO;
+}
+
 void Mesh::setUpMesh()
 {
 	glGenVertexArrays(1, &VAO);

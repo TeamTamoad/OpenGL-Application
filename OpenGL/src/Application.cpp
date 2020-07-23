@@ -11,6 +11,8 @@
 #include <iostream>
 #include <algorithm>
 #include <map>
+#include <string>
+#include <array>
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
@@ -20,6 +22,7 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Model.h"
+#include "Timer.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
@@ -32,7 +35,7 @@ float SCR_WIDTH = 800;
 float SCR_HEIGHT = 600;
 
 // Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 20.0f, 110.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -42,7 +45,7 @@ float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f;
 
 // lighting
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightPos(50.0f, 15.0f, 120.0f);
 
 int main()
 {
@@ -83,179 +86,71 @@ int main()
 
     // SHADER PROGRAM CONFIGURATION
     // ----------------------------
+    Shader instanceShader("res/shaders/Instancing/instance.vert", "res/shaders/Instancing/instance.frag");
     Shader modelShader("res/shaders/model.vert", "res/shaders/model.frag");
-    //modelShader.AddShader(GL_GEOMETRY_SHADER, "res/shaders/explode.geom");
-    Shader normalVisualShader("res/shaders/normal_visualize.vert", "res/shaders/singleColor.frag");
-    normalVisualShader.AddShader(GL_GEOMETRY_SHADER, "res/shaders/normal_visualize.geom");
-    
 
     // DATA SECTION
     // ------------
-    float pointVertices[] = {
-    //Position    //Color
-    -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // top-left
-     0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // top-right
-     0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom-right
-    -0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // bottom-left
-    };
+    constexpr unsigned int amount = 50000;
+    std::vector<glm::mat4> rockModelMatrices;
+    rockModelMatrices.reserve(amount);
 
-    float cubeVertices[] = {
-       //Position             Normal 
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+    srand(glfwGetTime());
+    float radius = 70.0f;
+    float offset = 15.0f;
+    for (unsigned int i = 0; i < amount; ++i)
+    {
+        glm::mat4 model = glm::mat4(1.0f);
+        
+        // 1. translation: displace along circle with 'radius' in range [-offset, offset] 
+        float angle = (float)i / (float)amount * 360.0f;
+        float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+        float x = sin(angle) * radius + displacement;
+        displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+        float y = displacement * 0.4f;
+        displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+        float z = cos(angle) * radius + displacement;
+        model = glm::translate(model, glm::vec3(x,y,z));
 
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+        // 2. scale: scale between 0.05 and 0.25f
+        float scale = (rand() % 20) / 100.0f + 0.05f;
+        model = glm::scale(model, glm::vec3(scale));
 
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+        // 3. rotation: add random rotation around a(semi)randomly picked rotation axis vector
+        model = glm::rotate(model, (float)(rand() % 360), glm::vec3(0.5f, 0.1f, 0.3f));
 
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+        rockModelMatrices.push_back(model);
+    }
+    
+    
+    // VERTEX ARRAY OBJECT SECTION
+    // ---------------------------
+    Model planet("F:/Visual Studio File/LearnOpenGL/Models/planet/planet.obj");
+    Model rock("F:/Visual Studio File/LearnOpenGL/Models/rock/rock.obj");
 
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+    // Instance buffer object
+    GLuint instanceVBO;
+    glGenBuffers(1, &instanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &rockModelMatrices[0], GL_STATIC_DRAW);
 
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-    };
+    for (unsigned int i = 0; i < rock.meshes.size(); ++i)
+    {
+        GLuint VAO = rock.meshes[i].GetVAO();
+        glBindVertexArray(VAO);
+        // vertex attributes
+        constexpr size_t vec4Size = sizeof(glm::vec4);
+        
+        for (int i = 0; i < 4; i++)
+        {
+            glEnableVertexAttribArray(i + 3);
+            glVertexAttribPointer(i + 3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(i * vec4Size));
+            glVertexAttribDivisor(i + 3, 1);
+        }
+        
+        glBindVertexArray(0);
+    }
 
-    float planeVertices[] = {
-        // positions          // texture Coords
-         5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-        -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
-
-         5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-         5.0f, -0.5f, -5.0f,  2.0f, 2.0f,
-        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f
-    };
-
-    float windowVertices[] = {
-        // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
-        0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
-        0.0f, -0.5f,  0.0f,  0.0f,  0.0f,
-        1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
-
-        0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
-        1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
-        1.0f,  0.5f,  0.0f,  1.0f,  1.0f
-    };
-
-    float quadVertices[] = { // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
-        // positions   // texCoords
-        -1.0f,  1.0f,  0.0f, 1.0f,
-        -1.0f, -1.0f,  0.0f, 0.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-
-        -1.0f,  1.0f,  0.0f, 1.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-         1.0f,  1.0f,  1.0f, 1.0f
-    };
-
-    std::vector<glm::vec3> positions = {
-        glm::vec3(-1.5f, 0.0f, -0.48f),
-        glm::vec3( 1.5f, 0.0f,  0.51f),
-        glm::vec3( 0.0f, 0.0f,  0.7f),
-        glm::vec3(-0.3f, 0.0f, -2.3f),
-        glm::vec3( 0.5f, 0.0f, -0.6f)
-    };
-
-    float skyboxVertices[] = {
-        // positions          
-        -1.0f,  1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-        -1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f
-    };
-
-
-    // VERTEX ARRAY OBJECT CONFIGURATION
-    // ---------------------------------
-    // Cube VAO
-    GLuint cubeVAO;
-    glGenVertexArrays(1, &cubeVAO);
-    glBindVertexArray(cubeVAO);
-
-    VertexBuffer cubeVBO(cubeVertices, sizeof(cubeVertices));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    // Points VAO
-    GLuint pointVAO;
-    glGenVertexArrays(1, &pointVAO);
-    glBindVertexArray(pointVAO);
-
-    VertexBuffer pointVBO(pointVertices, sizeof(pointVertices));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
-
-    Model backpack("F:/Visual Studio File/LearnOpenGL/Models/backpack/backpack.obj");
     // TEXTURE CONFIGURATION
     // ---------------------   
 
@@ -269,6 +164,9 @@ int main()
     //glEnable(GL_CULL_FACE);
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    //UNIFORM SHADER SETTING SECTION
+    //------------------------------
+    
 
     // RENDER LOOP
     // -----------
@@ -286,42 +184,47 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(currentFrame * 12.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(5.0f));
         glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 100.0f);
-
-        // Set uniform values
+        glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 250.0f);
+        
         modelShader.Use();
         modelShader.SetUniformMat4("model", model);
         modelShader.SetUniformMat4("view", view);
         modelShader.SetUniformMat4("projection", projection);
         modelShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
-        //modelShader.SetUniform1f("time", currentFrame);
-        modelShader.SetUniformVec3("ambient", glm::vec3(0.5f));
+        modelShader.SetUniformVec3("ambient", glm::vec3(0.05f));
         modelShader.SetUniformVec3("viewPos", camera.mPosition);
 
-        //point light
         modelShader.SetUniformVec3("pointLight.position", lightPos);
-        modelShader.SetUniformVec3("pointLight.diffuse", 0.0f, 0.0f, 0.0f);
-        modelShader.SetUniform1f("pointLight.linear", 0.07f);
-        modelShader.SetUniform1f("pointLight.quadratic", 0.017f);
+        modelShader.SetUniformVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
+        modelShader.SetUniform1f("pointLight.linear", 0.0003f);
+        modelShader.SetUniform1f("pointLight.quadratic", 0.00010f);
+       
+        planet.Draw(modelShader);
 
-        backpack.Draw(modelShader);
+        // rock
+        instanceShader.Use();
+        instanceShader.SetUniformMat4("view", view);
+        instanceShader.SetUniformMat4("projection", projection);
+        instanceShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
+        instanceShader.SetUniformVec3("ambient", glm::vec3(0.05f));
+        instanceShader.SetUniformVec3("viewPos", camera.mPosition);
 
-        //------------------------
-        normalVisualShader.Use();
-        normalVisualShader.SetUniformMat4("model", model);
-        normalVisualShader.SetUniformMat4("view", view);
-        normalVisualShader.SetUniformMat4("projection", projection);
-        normalVisualShader.SetUniformVec3("color", glm::vec3(1.0f, 1.0f, 0.0f));
+        instanceShader.SetUniformVec3("pointLight.position", lightPos);
+        instanceShader.SetUniformVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
+        instanceShader.SetUniform1f("pointLight.linear", 0.0003f);
+        instanceShader.SetUniform1f("pointLight.quadratic", 0.00010f);
 
-        backpack.DrawTextureless(normalVisualShader);
-
+        for (size_t i = 0; i < rock.meshes.size(); ++i)
+        {
+            glBindVertexArray(rock.meshes[i].GetVAO());
+            glDrawElementsInstanced(GL_TRIANGLES, rock.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount);
+        }
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    glDeleteVertexArrays(1, &cubeVAO);
 
     glfwTerminate();
     return 0;

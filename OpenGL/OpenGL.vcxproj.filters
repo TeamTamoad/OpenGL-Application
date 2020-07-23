@@ -68,6 +68,9 @@
     <ClInclude Include="src\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\images\container2.png">
@@ -153,6 +156,8 @@
     <None Include="res\shaders\explode.geom" />
     <None Include="res\shaders\normal_visualize.geom" />
     <None Include="res\shaders\normal_visualize.vert" />
+    <None Include="res\shaders\Instancing\instance.frag" />
+    <None Include="res\shaders\Instancing\instance.vert" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\oldCodes\BasicLighting.txt" />

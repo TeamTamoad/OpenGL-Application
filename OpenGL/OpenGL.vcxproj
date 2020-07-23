@@ -172,6 +172,7 @@
     <ClInclude Include="src\Shader.h" />
     <ClInclude Include="src\Texture2D.h" />
     <ClInclude Include="src\VertexBuffer.h" />
+    <ClInclude Include="src\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\images\blending_transparent_window.png" />
@@ -212,6 +213,8 @@
     <None Include="res\shaders\Gouraud.frag" />
     <None Include="res\shaders\Gouraud.vert" />
     <None Include="res\shaders\current\points.geom" />
+    <None Include="res\shaders\Instancing\instance.vert" />
+    <None Include="res\shaders\Instancing\instance.frag" />
     <None Include="res\shaders\lamp.frag" />
     <None Include="res\shaders\lamp.vert" />
     <None Include="res\shaders\model.frag" />
