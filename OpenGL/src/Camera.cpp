@@ -26,17 +26,17 @@ void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
 	float velocity = mMovementSpeed * deltaTime;
 	if (mDoubleSpeed) velocity *= 2;
 
-	if (direction == FORWARD)
+	if (direction == CameraMovement::FORWARD)
 		mPosition += mFront * velocity;
-	if (direction == BACKWARD)
+	if (direction == CameraMovement::BACKWARD)
 		mPosition -= mFront * velocity;
-	if (direction == LEFT)
+	if (direction == CameraMovement::LEFT)
 		mPosition -= mRight * velocity;
-	if (direction == RIGHT)
+	if (direction == CameraMovement::RIGHT)
 		mPosition += mRight * velocity;
-	if (direction == UP)
+	if (direction == CameraMovement::UP)
 		mPosition += mWorldUp * velocity;
-	if (direction == DOWN)
+	if (direction == CameraMovement::DOWN)
 		mPosition -= mWorldUp * velocity;
 }
 

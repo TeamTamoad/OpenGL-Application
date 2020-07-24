@@ -34,7 +34,7 @@ GLuint loadCubeMap(const std::vector<std::string>& faces);
 float SCR_WIDTH = 800;
 float SCR_HEIGHT = 600;
 
-// Camera
+// Main camera
 Camera camera(glm::vec3(0.0f, 20.0f, 110.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -241,17 +241,17 @@ void ProcessInput(GLFWwindow* window)
         camera.mDoubleSpeed = false;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
+        camera.ProcessKeyboard(CameraMovement::FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
+        camera.ProcessKeyboard(CameraMovement::BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
+        camera.ProcessKeyboard(CameraMovement::LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+        camera.ProcessKeyboard(CameraMovement::RIGHT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera.ProcessKeyboard(UP, deltaTime);
+        camera.ProcessKeyboard(CameraMovement::UP, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
-        camera.ProcessKeyboard(DOWN, deltaTime);
+        camera.ProcessKeyboard(CameraMovement::DOWN, deltaTime);
 }
 
 GLuint loadCubeMap(const std::vector<std::string>& faces)
