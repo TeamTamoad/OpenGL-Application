@@ -12,13 +12,13 @@ VertexBuffer::VertexBuffer(const void* data, GLuint size)
     GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
 }
 
-void VertexBuffer::Bind()
+void VertexBuffer::Bind() const
 {
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, mID));
 
 }
 
-void VertexBuffer::Unbind()
+void VertexBuffer::Unbind() const
 {
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }

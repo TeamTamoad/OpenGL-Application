@@ -15,6 +15,7 @@
 #include <array>
 
 #include "Renderer.h"
+#include "VertexArray.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "Shader.h"
@@ -81,6 +82,7 @@ int main()
     int nrAttributes;
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
     std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << "\n\n";
+    std::cout << "size of VertexArray" << sizeof(VertexArray);
 
     stbi_set_flip_vertically_on_load(true);
 
@@ -91,7 +93,7 @@ int main()
 
     // DATA SECTION
     // ------------
-    constexpr unsigned int amount = 50000;
+    constexpr unsigned int amount = 10000;
     std::vector<glm::mat4> rockModelMatrices;
     rockModelMatrices.reserve(amount);
 
@@ -129,10 +131,7 @@ int main()
     Model rock("F:/Visual Studio File/LearnOpenGL/Models/rock/rock.obj");
 
     // Instance buffer object
-    GLuint instanceVBO;
-    glGenBuffers(1, &instanceVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &rockModelMatrices[0], GL_STATIC_DRAW);
+    VertexBuffer instanceVBO(&rockModelMatrices[0], rockModelMatrices.size() * sizeof(glm::mat4));
 
     for (unsigned int i = 0; i < rock.meshes.size(); ++i)
     {
@@ -198,8 +197,8 @@ int main()
 
         modelShader.SetUniformVec3("pointLight.position", lightPos);
         modelShader.SetUniformVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
-        modelShader.SetUniform1f("pointLight.linear", 0.0003f);
-        modelShader.SetUniform1f("pointLight.quadratic", 0.00010f);
+        modelShader.SetUniform1f("pointLight.linear", 0.00003f);
+        modelShader.SetUniform1f("pointLight.quadratic", 0.00001f);
        
         planet.Draw(modelShader);
 
@@ -213,8 +212,8 @@ int main()
 
         instanceShader.SetUniformVec3("pointLight.position", lightPos);
         instanceShader.SetUniformVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
-        instanceShader.SetUniform1f("pointLight.linear", 0.0003f);
-        instanceShader.SetUniform1f("pointLight.quadratic", 0.00010f);
+        instanceShader.SetUniform1f("pointLight.linear", 0.00003f);
+        instanceShader.SetUniform1f("pointLight.quadratic", 0.00001f);
 
         for (size_t i = 0; i < rock.meshes.size(); ++i)
         {

@@ -162,6 +162,8 @@
     <ClCompile Include="src\Shader.cpp" />
     <ClCompile Include="src\Texture2D.cpp" />
     <ClCompile Include="src\VertexBuffer.cpp" />
+    <ClCompile Include="src\VertexArray.cpp" />
+    <ClCompile Include="src\VertexLayout.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Model.h" />
@@ -173,6 +175,8 @@
     <ClInclude Include="src\Texture2D.h" />
     <ClInclude Include="src\VertexBuffer.h" />
     <ClInclude Include="src\Timer.h" />
+    <ClInclude Include="src\VertexArray.h" />
+    <ClInclude Include="src\VertexLayout.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\images\blending_transparent_window.png" />

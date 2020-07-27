@@ -3,7 +3,23 @@
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, const std::vector<Texture>& textures)
 	: vertices(vertices), indices(indices), textures(textures)
 {
-	setUpMesh();
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	VBO = VertexBuffer(&vertices[0], vertices.size() * sizeof(Vertex));
+	IBO = IndexBuffer(&indices[0], indices.size() * sizeof(GLuint));
+
+	// vertex position
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+	// vertex normals
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+	// vertex texture coords
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+
+	glBindVertexArray(0);
 }
 
 void Mesh::Draw(const Shader& shader) const
@@ -42,25 +58,4 @@ void Mesh::DrawTextureless(const Shader& shader) const
 GLuint Mesh::GetVAO() const
 {
 	return VAO;
-}
-
-void Mesh::setUpMesh()
-{
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	VBO = VertexBuffer(&vertices[0], vertices.size() * sizeof(Vertex));
-	IBO = IndexBuffer(&indices[0], indices.size() * sizeof(GLuint));
-
-	// vertex position
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-	// vertex normals
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
-	// vertex texture coords
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
-
-	glBindVertexArray(0);
 }

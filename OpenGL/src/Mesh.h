@@ -42,7 +42,5 @@ private:
 	VertexBuffer VBO;
 	IndexBuffer IBO;
 	GLuint VAO;
-
-	void setUpMesh();
 };
 
