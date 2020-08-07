@@ -131,24 +131,10 @@ int main()
     Model rock("F:/Visual Studio File/LearnOpenGL/Models/rock/rock.obj");
 
     // Instance buffer object
-    VertexBuffer instanceVBO(&rockModelMatrices[0], rockModelMatrices.size() * sizeof(glm::mat4));
+    VertexBuffer instanceVBO(rockModelMatrices);
+    rock.SetUpInstaceBuffer(instanceVBO);
 
-    for (unsigned int i = 0; i < rock.meshes.size(); ++i)
-    {
-        GLuint VAO = rock.meshes[i].GetVAO();
-        glBindVertexArray(VAO);
-        // vertex attributes
-        constexpr size_t vec4Size = sizeof(glm::vec4);
-        
-        for (int i = 0; i < 4; i++)
-        {
-            glEnableVertexAttribArray(i + 3);
-            glVertexAttribPointer(i + 3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(i * vec4Size));
-            glVertexAttribDivisor(i + 3, 1);
-        }
-        
-        glBindVertexArray(0);
-    }
+    
 
     // TEXTURE CONFIGURATION
     // ---------------------   
@@ -215,11 +201,7 @@ int main()
         instanceShader.SetUniform1f("pointLight.linear", 0.00003f);
         instanceShader.SetUniform1f("pointLight.quadratic", 0.00001f);
 
-        for (size_t i = 0; i < rock.meshes.size(); ++i)
-        {
-            glBindVertexArray(rock.meshes[i].GetVAO());
-            glDrawElementsInstanced(GL_TRIANGLES, rock.meshes[i].indices.size(), GL_UNSIGNED_INT, 0, amount);
-        }
+        rock.DrawInstace(instanceShader, amount);
         
         glfwSwapBuffers(window);
         glfwPollEvents();

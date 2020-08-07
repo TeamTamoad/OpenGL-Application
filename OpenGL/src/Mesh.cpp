@@ -1,13 +1,10 @@
 #include "Mesh.h"
 
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, const std::vector<Texture>& textures)
-	: vertices(vertices), indices(indices), textures(textures)
+	: mVertices(vertices), mIndices(indices), mTextures(textures), VAO()
 {
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	VBO = VertexBuffer(&vertices[0], vertices.size() * sizeof(Vertex));
-	IBO = IndexBuffer(&indices[0], indices.size() * sizeof(GLuint));
+	VBO = VertexBuffer(mVertices);
+	IBO = IndexBuffer(mIndices);
 
 	// vertex position
 	glEnableVertexAttribArray(0);
@@ -18,19 +15,17 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indic
 	// vertex texture coords
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
-
-	glBindVertexArray(0);
 }
 
 void Mesh::Draw(const Shader& shader) const
 {
 	GLuint diffuseNr = 1;
 	GLuint specularNr = 1;
-	for (int i = 0; i < textures.size(); i++)
+	for (int i = 0; i < mTextures.size(); i++)
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
 		std::string number;
-		std::string name = textures[i].type;
+		std::string name = mTextures[i].type;
 
 		if (name == "texture_diffuse")
 			number = std::to_string(diffuseNr++);
@@ -38,24 +33,22 @@ void Mesh::Draw(const Shader& shader) const
 			number = std::to_string(specularNr++);
 
 		shader.SetUniform1i("material." + name + number, i);
-		glBindTexture(GL_TEXTURE_2D, textures[i].id);
+		glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
 	}
 	glActiveTexture(GL_TEXTURE0);
 
 	// draw mesh
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+	VAO.Bind();
+	glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
 }
 
 void Mesh::DrawTextureless(const Shader& shader) const
 {
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+	VAO.Bind();
+	glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
 }
 
-GLuint Mesh::GetVAO() const
+VertexArray Mesh::GetVAO() const
 {
 	return VAO;
 }

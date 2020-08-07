@@ -14,8 +14,10 @@ public:
     bool gammaCorrection;
 
     Model(const std::string& path, bool gamma = false);
+    void SetUpInstaceBuffer(const VertexBuffer& vbo) const;
     void Draw(const Shader& shader) const;
     void DrawTextureless(const Shader& shader) const;
+    void DrawInstace(const Shader& shader, unsigned int amount) const;
 
 private:
     void loadModel(const std::string& path);

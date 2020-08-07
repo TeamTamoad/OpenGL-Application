@@ -5,6 +5,24 @@ Model::Model(const std::string& path, bool gamma) : gammaCorrection(gamma)
 	loadModel(path);
 }
 
+void Model::SetUpInstaceBuffer(const VertexBuffer& vbo) const
+{
+	vbo.Bind();
+    constexpr size_t vec4Size = sizeof(glm::vec4);
+	for (unsigned int i = 0; i < meshes.size(); ++i)
+	{
+		meshes[i].GetVAO().Bind();
+		// vertex attributes
+		for (int i = 0; i < 4; i++)
+		{
+			glEnableVertexAttribArray(i + 3);
+			glVertexAttribPointer(i + 3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size, (void*)(i * vec4Size));
+			glVertexAttribDivisor(i + 3, 1);
+		}
+	}
+
+}
+
 void Model::Draw(const Shader& shader) const
 {
 	for (int i = 0; i < meshes.size(); i++)
@@ -15,6 +33,16 @@ void Model::DrawTextureless(const Shader& shader) const
 {
 	for (int i = 0; i < meshes.size(); i++)
 		meshes[i].DrawTextureless(shader);
+}
+
+void Model::DrawInstace(const Shader& shader, unsigned int amount) const
+{
+	shader.Use();
+	for (size_t i = 0; i < meshes.size(); ++i)
+	{
+		meshes[i].GetVAO().Bind();
+		glDrawElementsInstanced(GL_TRIANGLES, meshes[i].mIndices.size(), GL_UNSIGNED_INT, 0, amount);
+	}
 }
 
 void Model::loadModel(const std::string& path)

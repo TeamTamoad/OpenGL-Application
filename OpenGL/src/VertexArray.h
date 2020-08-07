@@ -11,9 +11,11 @@ private:
 public:
 	VertexArray();
 
-	void AddBuffer(VertexBuffer vbo, const VertexLayout& layout);
+	void AddBuffer(const VertexBuffer& vbo, const VertexLayout& layout);
 
 	void Bind() const;
 	void Unbind() const;
+
+	GLuint GetID() const;
 };
 

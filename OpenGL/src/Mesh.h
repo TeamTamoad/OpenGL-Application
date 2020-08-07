@@ -8,6 +8,7 @@
 
 #include "Renderer.h"
 #include "Shader.h"
+#include "VertexArray.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 
@@ -27,20 +28,21 @@ struct Texture
 
 class Mesh
 {
+private:
+	VertexArray VAO;
+	VertexBuffer VBO;
+	IndexBuffer IBO;
+
 public:
 	// mesh data
-	std::vector<Vertex>  vertices;
-	std::vector<GLuint>  indices;
-	std::vector<Texture> textures;
+	std::vector<Vertex>  mVertices;
+	std::vector<GLuint>  mIndices;
+	std::vector<Texture> mTextures;
 
 	Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, const std::vector<Texture>& textures);
 	void Draw(const Shader& shader) const;
 	void DrawTextureless(const Shader& shader) const;
-	GLuint GetVAO() const;
+	VertexArray GetVAO() const;
 
-private:
-	VertexBuffer VBO;
-	IndexBuffer IBO;
-	GLuint VAO;
 };
 

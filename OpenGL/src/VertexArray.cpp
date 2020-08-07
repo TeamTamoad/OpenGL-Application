@@ -3,10 +3,10 @@
 VertexArray::VertexArray()
 {
 	glGenVertexArrays(1, &mID);
-
+	glBindVertexArray(mID);
 }
 
-void VertexArray::AddBuffer(VertexBuffer vbo, const VertexLayout& layout)
+void VertexArray::AddBuffer(const VertexBuffer& vbo, const VertexLayout& layout)
 {
 	Bind();
 	vbo.Bind();
@@ -29,4 +29,9 @@ void VertexArray::Bind() const
 void VertexArray::Unbind() const
 {
 	glBindVertexArray(0);
+}
+
+GLuint VertexArray::GetID() const
+{
+	return mID;
 }
