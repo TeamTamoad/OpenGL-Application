@@ -39,12 +39,6 @@ void Model::DrawInstace(const Shader& shader, unsigned int amount) const
 {
 	for (size_t i = 0; i < meshes.size(); i++)
 		meshes[i].DrawInstance(shader, amount);
-	/*shader.Use();
-	for (size_t i = 0; i < meshes.size(); ++i)
-	{
-		meshes[i].GetVAO().Bind();
-		glDrawElementsInstanced(GL_TRIANGLES, meshes[i].mIndices.size(), GL_UNSIGNED_INT, 0, amount);
-	}*/
 }
 
 void Model::loadModel(const std::string& path)

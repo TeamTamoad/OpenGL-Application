@@ -2,14 +2,14 @@
 
 Camera::Camera(const glm::vec3& position, const glm::vec3& up, const float& yaw, const float& pitch)
 	: mPosition(position), mWorldUp(up), mFront(glm::vec3(0.0f, 0.0f, -1.0f)), mYaw(yaw), mPitch(pitch), 
-	  mMovementSpeed(SPEED), mMouseSensitivity(SENSITIVITY), mFOV(FOV), mDoubleSpeed(false)
+	  mMovementSpeed(SPEED), mMouseSensitivity(SENSITIVITY), mFOV(FOV), mBoosted(false), mBoostSpeed(2)
 {
 	updateCameraVectors();
 }
 
 Camera::Camera(const float& posX, const float& posY, const float& posZ, const float& upX, const float& upY, const float& upZ, const float& yaw, const float& pitch)
 	: mFront(glm::vec3(0.0f, 0.0f, -1.0f)), mYaw(yaw), mPitch(pitch), mMovementSpeed(SPEED), 
-	  mMouseSensitivity(SENSITIVITY), mFOV(FOV), mDoubleSpeed(false)
+	  mMouseSensitivity(SENSITIVITY), mFOV(FOV), mBoosted(false), mBoostSpeed(2)
 {
 	mPosition = glm::vec3(posX, posY, posZ);
 	mWorldUp = glm::vec3(upX, upY, upZ);
@@ -24,7 +24,7 @@ glm::mat4 Camera::GetViewMatrix()
 void Camera::ProcessKeyboard(CameraMovement direction, float deltaTime)
 {
 	float velocity = mMovementSpeed * deltaTime;
-	if (mDoubleSpeed) velocity *= 2;
+	if (mBoosted) velocity *= mBoostSpeed;
 
 	if (direction == CameraMovement::FORWARD)
 		mPosition += mFront * velocity;
@@ -62,6 +62,11 @@ void Camera::ProcessMouseScroll(float yoffset)
 	mFOV -= (float)yoffset;
 	mFOV = mFOV > 45.0f ? 45.0f : mFOV;
 	mFOV = mFOV <  1.0f ?  1.0f : mFOV;
+}
+
+void Camera::SetBoostSpeed(float speedUP)
+{
+	mBoostSpeed = speedUP;
 }
 
 void Camera::updateCameraVectors()

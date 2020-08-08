@@ -34,8 +34,9 @@ public:
 	float mMovementSpeed;
 	float mMouseSensitivity;
 	float mFOV;
+	float mBoostSpeed;
 	// bool options
-	bool mDoubleSpeed;
+	bool mBoosted;
 
 	// constructor with vectors
 	Camera(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f), const float& yaw = YAW, const float& pitch = PITCH);
@@ -47,6 +48,8 @@ public:
 	void ProcessKeyboard(CameraMovement direction, float deltaTime);
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
 	void ProcessMouseScroll(float yoffset);
+	void SetBoostSpeed(float speedUP);
+
 
 private:
 	void updateCameraVectors();

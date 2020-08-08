@@ -152,7 +152,7 @@ int main()
     //UNIFORM SHADER SETTING SECTION
     //------------------------------
     
-
+    camera.SetBoostSpeed(7);
     // RENDER LOOP
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -217,9 +217,9 @@ void ProcessInput(GLFWwindow* window)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        camera.mDoubleSpeed = true;
+        camera.mBoosted = true;
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
-        camera.mDoubleSpeed = false;
+        camera.mBoosted = false;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera.ProcessKeyboard(CameraMovement::FORWARD, deltaTime);
