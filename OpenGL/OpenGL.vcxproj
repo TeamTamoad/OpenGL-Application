@@ -195,6 +195,18 @@
     <Image Include="res\images\skybox\left.jpg" />
     <Image Include="res\images\skybox\right.jpg" />
     <Image Include="res\images\skybox\top.jpg" />
+    <Image Include="res\images\ulukai\corona_bk.png" />
+    <Image Include="res\images\ulukai\corona_dn.png" />
+    <Image Include="res\images\ulukai\corona_ft.png" />
+    <Image Include="res\images\ulukai\corona_lf.png" />
+    <Image Include="res\images\ulukai\corona_rt.png" />
+    <Image Include="res\images\ulukai\corona_up.png" />
+    <Image Include="res\images\ulukai\redeclipse_bk.png" />
+    <Image Include="res\images\ulukai\redeclipse_dn.png" />
+    <Image Include="res\images\ulukai\redeclipse_ft.png" />
+    <Image Include="res\images\ulukai\redeclipse_lf.png" />
+    <Image Include="res\images\ulukai\redeclipse_rt.png" />
+    <Image Include="res\images\ulukai\redeclipse_up.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\blending.frag" />
@@ -234,6 +246,7 @@
     <None Include="res\shaders\normal_visualize.vert" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="res\images\ulukai\readme.txt" />
     <Text Include="res\oldCodes\BasicLighting.txt" />
     <Text Include="res\oldCodes\code_tranform.txt" />
     <Text Include="res\oldCodes\GettingStarted.txt" />

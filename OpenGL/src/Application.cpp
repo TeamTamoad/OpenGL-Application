@@ -82,17 +82,62 @@ int main()
     int nrAttributes;
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
     std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << "\n\n";
-    std::cout << "size of VertexArray" << sizeof(VertexArray);
 
     stbi_set_flip_vertically_on_load(true);
 
     // SHADER PROGRAM CONFIGURATION
     // ----------------------------
-    Shader instanceShader("res/shaders/Instancing/instance.vert", "res/shaders/Instancing/instance.frag");
+    Shader instanceShader("res/shaders/instance.vert", "res/shaders/instance.frag");
     Shader modelShader("res/shaders/model.vert", "res/shaders/model.frag");
+    Shader skyboxShader("res/shaders/cubemap.vert", "res/shaders/cubemap.frag");
 
     // DATA SECTION
     // ------------
+    std::vector<float> skyboxVertices = {
+        // positions          
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+
+        -1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f, -1.0f,
+         1.0f,  1.0f,  1.0f,
+         1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f, -1.0f,
+         1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+         1.0f, -1.0f,  1.0f
+    };
+
     constexpr unsigned int amount = 10000;
     std::vector<glm::mat4> rockModelMatrices;
     rockModelMatrices.reserve(amount);
@@ -127,32 +172,45 @@ int main()
     
     // VERTEX ARRAY OBJECT SECTION
     // ---------------------------
-    Model planet("F:/Visual Studio File/LearnOpenGL/Models/planet/planet.obj");
-    Model rock("F:/Visual Studio File/LearnOpenGL/Models/rock/rock.obj");
+    Model planet("res/models/planet/planet.obj");
+    Model rock("res/models/rock/rock.obj");
+    
+    // Skybox VAO
+    VertexArray skyboxVAO;
+    VertexLayout cubeLayout;
+    cubeLayout.Push<float>(3);
+    skyboxVAO.AddBuffer(VertexBuffer(skyboxVertices), cubeLayout);
+
 
     // Instance buffer object
     VertexBuffer instanceVBO(rockModelMatrices);
     rock.SetUpInstaceBuffer(instanceVBO);
 
     
-
     // TEXTURE CONFIGURATION
-    // ---------------------   
+    // --------------------- 
+    std::vector<std::string> skyboxSources = {
+        "res/cubemaps/ulukai/corona_rt.png",
+        "res/cubemaps/ulukai/corona_lf.png",
+        "res/cubemaps/ulukai/corona_up.png",
+        "res/cubemaps/ulukai/corona_dn.png",
+        "res/cubemaps/ulukai/corona_bk.png",
+        "res/cubemaps/ulukai/corona_ft.png"
+    };
+    GLuint cubeMapTex = loadCubeMap(skyboxSources);
+
 
 
     // OpenGL CONFIGURATION
     //---------------------
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_BLEND);
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //glEnable(GL_PROGRAM_POINT_SIZE);
-    //glEnable(GL_CULL_FACE);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 
     //UNIFORM SHADER SETTING SECTION
     //------------------------------
     
     camera.SetBoostSpeed(7);
+
     // RENDER LOOP
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -178,7 +236,7 @@ int main()
         modelShader.SetUniformMat4("view", view);
         modelShader.SetUniformMat4("projection", projection);
         modelShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
-        modelShader.SetUniformVec3("ambient", glm::vec3(0.05f));
+        modelShader.SetUniformVec3("ambient", glm::vec3(0.1f));
         modelShader.SetUniformVec3("viewPos", camera.mPosition);
 
         modelShader.SetUniformVec3("pointLight.position", lightPos);
@@ -187,18 +245,30 @@ int main()
         modelShader.SetUniform1f("pointLight.quadratic", 0.00001f);
        
 
-        // rock
         instanceShader.Use();
         instanceShader.SetUniformMat4("view", view);
         instanceShader.SetUniformMat4("projection", projection);
         instanceShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
-        instanceShader.SetUniformVec3("ambient", glm::vec3(0.05f));
+        instanceShader.SetUniformVec3("ambient", glm::vec3(0.1f));
         instanceShader.SetUniformVec3("viewPos", camera.mPosition);
 
         instanceShader.SetUniformVec3("pointLight.position", lightPos);
         instanceShader.SetUniformVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
         instanceShader.SetUniform1f("pointLight.linear", 0.00003f);
         instanceShader.SetUniform1f("pointLight.quadratic", 0.00001f);
+
+
+        skyboxShader.Use();
+        glDepthFunc(GL_LEQUAL);
+        view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+        skyboxShader.SetUniformMat4("view", view);
+        skyboxShader.SetUniformMat4("projection", projection);
+        skyboxShader.SetUniform1i("cubemapTex", 0);
+        skyboxVAO.Bind();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMapTex);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthFunc(GL_LESS);
 
         planet.Draw(modelShader);
         rock.DrawInstace(instanceShader, amount);
@@ -235,6 +305,7 @@ void ProcessInput(GLFWwindow* window)
         camera.ProcessKeyboard(CameraMovement::DOWN, deltaTime);
 }
 
+// Sources sorted by Right, Left, Top, Bottom, Front and Back
 GLuint loadCubeMap(const std::vector<std::string>& faces)
 {
     GLuint textureID;

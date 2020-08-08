@@ -133,6 +133,42 @@
     <Image Include="res\images\skybox\top.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\images\ulukai\corona_bk.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\corona_dn.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\corona_ft.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\corona_lf.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\corona_rt.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\corona_up.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\redeclipse_bk.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\redeclipse_dn.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\redeclipse_ft.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\redeclipse_lf.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\redeclipse_rt.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\images\ulukai\redeclipse_up.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\color.frag" />
@@ -175,5 +211,6 @@
     <Text Include="res\oldCodes\BasicLighting.txt" />
     <Text Include="res\oldCodes\code_tranform.txt" />
     <Text Include="res\oldCodes\GettingStarted.txt" />
+    <Text Include="res\images\ulukai\readme.txt" />
   </ItemGroup>
 </Project>
