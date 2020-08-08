@@ -25,24 +25,26 @@ void Model::SetUpInstaceBuffer(const VertexBuffer& vbo) const
 
 void Model::Draw(const Shader& shader) const
 {
-	for (int i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < meshes.size(); i++)
 		meshes[i].Draw(shader);
 }
 
 void Model::DrawTextureless(const Shader& shader) const
 {
-	for (int i = 0; i < meshes.size(); i++)
+	for (size_t i = 0; i < meshes.size(); i++)
 		meshes[i].DrawTextureless(shader);
 }
 
 void Model::DrawInstace(const Shader& shader, unsigned int amount) const
 {
-	shader.Use();
+	for (size_t i = 0; i < meshes.size(); i++)
+		meshes[i].DrawInstance(shader, amount);
+	/*shader.Use();
 	for (size_t i = 0; i < meshes.size(); ++i)
 	{
 		meshes[i].GetVAO().Bind();
 		glDrawElementsInstanced(GL_TRIANGLES, meshes[i].mIndices.size(), GL_UNSIGNED_INT, 0, amount);
-	}
+	}*/
 }
 
 void Model::loadModel(const std::string& path)

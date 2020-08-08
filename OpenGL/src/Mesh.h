@@ -42,6 +42,7 @@ public:
 	Mesh(const std::vector<Vertex>& vertices, const std::vector<GLuint>& indices, const std::vector<Texture>& textures);
 	void Draw(const Shader& shader) const;
 	void DrawTextureless(const Shader& shader) const;
+	void DrawInstance(const Shader& shader, unsigned int amount) const;
 	VertexArray GetVAO() const;
 
 };

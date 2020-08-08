@@ -186,7 +186,6 @@ int main()
         modelShader.SetUniform1f("pointLight.linear", 0.00003f);
         modelShader.SetUniform1f("pointLight.quadratic", 0.00001f);
        
-        planet.Draw(modelShader);
 
         // rock
         instanceShader.Use();
@@ -201,6 +200,7 @@ int main()
         instanceShader.SetUniform1f("pointLight.linear", 0.00003f);
         instanceShader.SetUniform1f("pointLight.quadratic", 0.00001f);
 
+        planet.Draw(modelShader);
         rock.DrawInstace(instanceShader, amount);
         
         glfwSwapBuffers(window);
