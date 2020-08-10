@@ -48,6 +48,24 @@
     <ClCompile Include="src\VertexLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\vendor\imgui\imgui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vendor\imgui\imgui_demo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vendor\imgui\imgui_draw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vendor\imgui\imgui_widgets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vendor\imgui\imgui_impl_glfw.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\vendor\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Camera.h">
@@ -83,6 +101,30 @@
     <ClInclude Include="src\VertexLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\vendor\imgui\imconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vendor\imgui\imgui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vendor\imgui\imgui_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vendor\imgui\imstb_rectpack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vendor\imgui\imstb_textedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vendor\imgui\imstb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vendor\imgui\imgui_impl_glfw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\vendor\imgui\imgui_impl_opengl3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\images\container2.png">
@@ -115,58 +157,58 @@
     <Image Include="res\images\blending_transparent_window.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\skybox\back.jpg">
+    <Image Include="res\cubemaps\skybox\back.jpg">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\skybox\bottom.jpg">
+    <Image Include="res\cubemaps\skybox\bottom.jpg">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\skybox\front.jpg">
+    <Image Include="res\cubemaps\skybox\front.jpg">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\skybox\left.jpg">
+    <Image Include="res\cubemaps\skybox\left.jpg">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\skybox\right.jpg">
+    <Image Include="res\cubemaps\skybox\right.jpg">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\skybox\top.jpg">
+    <Image Include="res\cubemaps\skybox\top.jpg">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\corona_bk.png">
+    <Image Include="res\cubemaps\ulukai\corona_bk.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\corona_dn.png">
+    <Image Include="res\cubemaps\ulukai\corona_dn.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\corona_ft.png">
+    <Image Include="res\cubemaps\ulukai\corona_ft.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\corona_lf.png">
+    <Image Include="res\cubemaps\ulukai\corona_lf.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\corona_rt.png">
+    <Image Include="res\cubemaps\ulukai\corona_rt.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\corona_up.png">
+    <Image Include="res\cubemaps\ulukai\corona_up.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\redeclipse_bk.png">
+    <Image Include="res\cubemaps\ulukai\redeclipse_bk.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\redeclipse_dn.png">
+    <Image Include="res\cubemaps\ulukai\redeclipse_dn.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\redeclipse_ft.png">
+    <Image Include="res\cubemaps\ulukai\redeclipse_ft.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\redeclipse_lf.png">
+    <Image Include="res\cubemaps\ulukai\redeclipse_lf.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\redeclipse_rt.png">
+    <Image Include="res\cubemaps\ulukai\redeclipse_rt.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\images\ulukai\redeclipse_up.png">
+    <Image Include="res\cubemaps\ulukai\redeclipse_up.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
@@ -204,13 +246,13 @@
     <None Include="res\shaders\explode.geom" />
     <None Include="res\shaders\normal_visualize.geom" />
     <None Include="res\shaders\normal_visualize.vert" />
-    <None Include="res\shaders\Instancing\instance.frag" />
-    <None Include="res\shaders\Instancing\instance.vert" />
+    <None Include="res\shaders\instance.frag" />
+    <None Include="res\shaders\instance.vert" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="res\oldCodes\BasicLighting.txt" />
     <Text Include="res\oldCodes\code_tranform.txt" />
     <Text Include="res\oldCodes\GettingStarted.txt" />
-    <Text Include="res\images\ulukai\readme.txt" />
+    <Text Include="res\cubemaps\ulukai\readme.txt" />
   </ItemGroup>
 </Project>

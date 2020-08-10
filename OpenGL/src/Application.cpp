@@ -8,6 +8,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
 #include <iostream>
 #include <algorithm>
 #include <map>
@@ -28,6 +33,7 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void ProcessInput(GLFWwindow* window);
 GLuint loadCubeMap(const std::vector<std::string>& faces);
 
@@ -45,11 +51,10 @@ bool firstMouse = true;
 float deltaTime = 0.0f; // Time between current frame and last frame
 float lastFrame = 0.0f;
 
-// lighting
-glm::vec3 lightPos(50.0f, 15.0f, 120.0f);
 
 int main()
 {
+    // ------------------------------------------ GLFW CONFIGURATION -------------------------------------------------
     if (!glfwInit())
         return -1;
 
@@ -61,10 +66,12 @@ int main()
     GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "OpenGL Tutorial", nullptr, nullptr); // Windowed
     //GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
 
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    // Set callback functions
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     if (!window)
     {
@@ -85,14 +92,26 @@ int main()
 
     stbi_set_flip_vertically_on_load(true);
 
-    // SHADER PROGRAM CONFIGURATION
-    // ----------------------------
+    // ----------------------------------------- IMGUI SETUP -------------------------------------------------------
+    
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330 core");
+
+
+    // -------------------------------------- SHADER PROGRAM SETUP --------------------------------------------------
+
     Shader instanceShader("res/shaders/instance.vert", "res/shaders/instance.frag");
     Shader modelShader("res/shaders/model.vert", "res/shaders/model.frag");
     Shader skyboxShader("res/shaders/cubemap.vert", "res/shaders/cubemap.frag");
 
-    // DATA SECTION
-    // ------------
+
+    // ----------------------------------------- DATA SECTION -------------------------------------------------------
+
     std::vector<float> skyboxVertices = {
         // positions          
         -1.0f,  1.0f, -1.0f,
@@ -138,7 +157,8 @@ int main()
          1.0f, -1.0f,  1.0f
     };
 
-    constexpr unsigned int amount = 10000;
+    // Prepare model matrices for rock
+    constexpr unsigned int amount = 100000;
     std::vector<glm::mat4> rockModelMatrices;
     rockModelMatrices.reserve(amount);
 
@@ -168,10 +188,27 @@ int main()
 
         rockModelMatrices.push_back(model);
     }
+
+    //Light levels
+    struct PointLight
+    {
+        float linear;
+        float quadratic;
+    };
     
+    std::vector<PointLight> lightParameters = {
+        { 0.027f,  0.0028f   },
+        { 0.022f,  0.0019f   },
+        { 0.014f,  0.0007f   },
+        { 0.007f,  0.0002f   },
+        { 0.004f,  0.00015f  },
+        { 0.002f,  0.00010f  },
+        { 0.0017f, 0.00005f  },
+        { 0.0014f, 0.000007f }
+    };
     
-    // VERTEX ARRAY OBJECT SECTION
-    // ---------------------------
+    // ----------------------------------------- VERTEX ARRAY OBJECT SECTION -----------------------------------------
+    
     Model planet("res/models/planet/planet.obj");
     Model rock("res/models/rock/rock.obj");
     
@@ -206,10 +243,14 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
 
-    //UNIFORM SHADER SETTING SECTION
-    //------------------------------
-    
+    //SETTING SECTION
+    //----------------
     camera.SetBoostSpeed(7);
+    float ambientValue = 0.1f;
+    int lightLevel = 6;
+    int rockRenderAmount = 10000;
+    float lightHeight = 20.0f;
+    float lightAngle = 20.0f;
 
     // RENDER LOOP
     // -----------
@@ -226,36 +267,66 @@ int main()
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        {
+            static int counter = 0;
+
+            ImGui::Begin("Setting Panel");                          
+
+            ImGui::Text("Light setting");
+            ImGui::SliderFloat("Ambient", &ambientValue, 0.0f, 1.0f); 
+            ImGui::SliderInt("Light Level", &lightLevel, 1, lightParameters.size());
+            ImGui::SliderFloat("Height", &lightHeight, -40.0f, 40.0f);
+            ImGui::SliderFloat("Angle", &lightAngle, 0.0f, 360.0f);
+
+            ImGui::Text("Objects setting");
+            ImGui::SliderInt("Rock amount", &rockRenderAmount, 0, 100000);
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+            ImGui::End();
+        }
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(5.0f));
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 250.0f);
+
+        // Calculate light position
+        glm::vec3 lightPos(0.0f, 0.0f, 120.0f);
+        lightPos += glm::vec3(0.0f, lightHeight, 0.0f);
+        lightPos = glm::rotate(lightPos, glm::radians(lightAngle), glm::vec3(0.0f, 1.0f, 0.0f));
         
         modelShader.Use();
         modelShader.SetUniformMat4("model", model);
         modelShader.SetUniformMat4("view", view);
         modelShader.SetUniformMat4("projection", projection);
         modelShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
-        modelShader.SetUniformVec3("ambient", glm::vec3(0.1f));
+        modelShader.SetUniformVec3("ambient", glm::vec3(ambientValue));
         modelShader.SetUniformVec3("viewPos", camera.mPosition);
 
         modelShader.SetUniformVec3("pointLight.position", lightPos);
         modelShader.SetUniformVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
-        modelShader.SetUniform1f("pointLight.linear", 0.00003f);
-        modelShader.SetUniform1f("pointLight.quadratic", 0.00001f);
+        modelShader.SetUniform1f("pointLight.linear", lightParameters[size_t(lightLevel)-1].linear);
+        modelShader.SetUniform1f("pointLight.quadratic", lightParameters[size_t(lightLevel) - 1].quadratic);
        
 
         instanceShader.Use();
         instanceShader.SetUniformMat4("view", view);
         instanceShader.SetUniformMat4("projection", projection);
         instanceShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
-        instanceShader.SetUniformVec3("ambient", glm::vec3(0.1f));
+        instanceShader.SetUniformVec3("ambient", glm::vec3(ambientValue));
         instanceShader.SetUniformVec3("viewPos", camera.mPosition);
 
         instanceShader.SetUniformVec3("pointLight.position", lightPos);
         instanceShader.SetUniformVec3("pointLight.diffuse", 1.0f, 1.0f, 1.0f);
-        instanceShader.SetUniform1f("pointLight.linear", 0.00003f);
-        instanceShader.SetUniform1f("pointLight.quadratic", 0.00001f);
+        instanceShader.SetUniform1f("pointLight.linear", lightParameters[size_t(lightLevel) - 1].linear);
+        instanceShader.SetUniform1f("pointLight.quadratic", lightParameters[size_t(lightLevel) - 1].quadratic);
 
 
         skyboxShader.Use();
@@ -271,7 +342,11 @@ int main()
         glDepthFunc(GL_LESS);
 
         planet.Draw(modelShader);
-        rock.DrawInstace(instanceShader, amount);
+        rock.DrawInstace(instanceShader, rockRenderAmount);
+
+        // Render GUI
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -283,9 +358,6 @@ int main()
 
 void ProcessInput(GLFWwindow* window)
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         camera.mBoosted = true;
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE)
@@ -363,4 +435,19 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     camera.ProcessMouseScroll(yoffset);
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (key == GLFW_KEY_F && action == GLFW_PRESS)
+    {
+        camera.mFreezed = !camera.mFreezed;
+        if (camera.mFreezed)
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        else
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
 }
