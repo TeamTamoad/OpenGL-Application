@@ -70,9 +70,9 @@ void Camera::ProcessMouseScroll(float yoffset)
 	mFOV = mFOV <  1.0f ?  1.0f : mFOV;
 }
 
-void Camera::SetBoostSpeed(float speedUP)
+void Camera::SetBoostSpeed(float speedUp)
 {
-	mBoostSpeed = speedUP;
+	if (speedUp >= 0) mBoostSpeed = speedUp;
 }
 
 void Camera::updateCameraVectors()

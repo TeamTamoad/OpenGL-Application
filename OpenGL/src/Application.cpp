@@ -34,7 +34,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-void ProcessInput(GLFWwindow* window);
+void ProcessInput(GLFWwindow* window, float deltaTime);
 GLuint loadCubeMap(const std::vector<std::string>& faces);
 
 // Settings
@@ -47,9 +47,6 @@ float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
-// Timing
-float deltaTime = 0.0f; // Time between current frame and last frame
-float lastFrame = 0.0f;
 
 
 int main()
@@ -245,12 +242,18 @@ int main()
 
     //SETTING SECTION
     //----------------
-    camera.SetBoostSpeed(7);
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
+
     float ambientValue = 0.1f;
     int lightLevel = 6;
     int rockRenderAmount = 10000;
     float lightHeight = 20.0f;
     float lightAngle = 20.0f;
+    float planetScale = 5.0f;
+
+    camera.mMovementSpeed = 5.0f;
+    camera.mBoostSpeed = 5.0f;
 
     // RENDER LOOP
     // -----------
@@ -262,7 +265,7 @@ int main()
         lastFrame = currentFrame;
 
         // Handle input
-        ProcessInput(window);
+        ProcessInput(window, deltaTime);
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -273,8 +276,6 @@ int main()
         ImGui::NewFrame();
 
         {
-            static int counter = 0;
-
             ImGui::Begin("Setting Panel");                          
 
             ImGui::Text("Light setting");
@@ -283,17 +284,33 @@ int main()
             ImGui::SliderFloat("Height", &lightHeight, -40.0f, 40.0f);
             ImGui::SliderFloat("Angle", &lightAngle, 0.0f, 360.0f);
 
-            ImGui::Text("Objects setting");
+            ImGui::Text("Object setting");
+            ImGui::SliderFloat("Planet scale", &planetScale, 1.0f, 10.0f);
             ImGui::SliderInt("Rock amount", &rockRenderAmount, 0, 100000);
+
+            ImGui::Text("Camera setting");
+            ImGui::SliderFloat("Speed", &camera.mMovementSpeed, 1.0f, 10.0f);
+            ImGui::SliderFloat("Speed-up", &camera.mBoostSpeed, 1.0f, 10.0f);
+
+            if (ImGui::Button("Default"))
+            {
+                ambientValue = 0.1f;
+                lightLevel = 6;
+                rockRenderAmount = 10000;
+                lightHeight = 20.0f;
+                lightAngle = 20.0f;
+                planetScale = 5.0f;
+                camera.mMovementSpeed = 5.0f;
+                camera.mBoostSpeed = 5.0f;
+            }
+            ImGui::SameLine(); ImGui::Text("Set all values to defaults");
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
         }
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(5.0f));
+        model = glm::scale(model, glm::vec3(planetScale));
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.mFOV), SCR_WIDTH / SCR_HEIGHT, 0.1f, 250.0f);
 
@@ -356,7 +373,7 @@ int main()
     return 0;
 }
 
-void ProcessInput(GLFWwindow* window)
+void ProcessInput(GLFWwindow* window, float deltaTime)
 {
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
         camera.mBoosted = true;
@@ -446,7 +463,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     {
         camera.mFreezed = !camera.mFreezed;
         if (camera.mFreezed)
+        {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            glfwSetCursorPos(window, SCR_WIDTH / 2, SCR_HEIGHT / 2);
+        }
         else
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     }
