@@ -162,6 +162,7 @@ int main()
     srand(glfwGetTime());
     float radius = 70.0f;
     float offset = 15.0f;
+    Timer timer;
     for (unsigned int i = 0; i < amount; ++i)
     {
         glm::mat4 model = glm::mat4(1.0f);
@@ -185,6 +186,7 @@ int main()
 
         rockModelMatrices.push_back(model);
     }
+    timer.printDuration("Prepare rock models");
 
     //Light levels
     struct PointLight
@@ -245,15 +247,15 @@ int main()
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
-    float ambientValue = 0.1f;
-    int lightLevel = 6;
-    int rockRenderAmount = 10000;
-    float lightHeight = 20.0f;
-    float lightAngle = 20.0f;
-    float planetScale = 5.0f;
+    float ambientValue     = 0.1f;
+    int   lightLevel       = 6;
+    float lightHeight      = 20.0f;
+    float lightAngle       = 20.0f;
+    float planetScale      = 5.0f;
+    int   rockRenderAmount = 10000;
 
-    camera.mMovementSpeed = 5.0f;
-    camera.mBoostSpeed = 5.0f;
+    camera.mMovementSpeed  = 5.0f;
+    camera.mBoostSpeed     = 5.0f;
 
     // RENDER LOOP
     // -----------
@@ -307,7 +309,26 @@ int main()
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
             ImGui::End();
+
+            ImGui::Begin("Control");
+            ImGui::Text("W - move forward");
+            ImGui::Text("A - move left");
+            ImGui::Text("S - move backward");
+            ImGui::Text("D - move right");
+            ImGui::Text("SPACE BAR - move upward");
+            ImGui::Text("CTRL- move downward");
+            ImGui::Text("F - freeze the screen and show cursor");
+
+            ImGui::BeginChild("Test Child");
+            ImGui::Text("Texst");
+            ImGui::EndChild();
+
+            ImGui::End();
+
+            
         }
+
+
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::scale(model, glm::vec3(planetScale));
