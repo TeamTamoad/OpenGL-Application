@@ -18,6 +18,8 @@
 #include <map>
 #include <string>
 #include <array>
+#include <random>
+#include <functional>
 
 #include "Renderer.h"
 #include "VertexArray.h"
@@ -90,8 +92,7 @@ int main()
     stbi_set_flip_vertically_on_load(true);
 
     // ----------------------------------------- IMGUI SETUP -------------------------------------------------------
-    
-    // Setup Dear ImGui context
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -159,30 +160,36 @@ int main()
     std::vector<glm::mat4> rockModelMatrices;
     rockModelMatrices.reserve(amount);
 
-    srand(glfwGetTime());
-    float radius = 70.0f;
+    float radius = 70.0f;  
     float offset = 15.0f;
     Timer timer;
+    
+    // TODO: Test Prepare model using Random generator
+    std::mt19937_64 rng(glfwGetTime());
+    std::uniform_real_distribution<float> distOffset(-offset, offset);
+    std::uniform_real_distribution<float> distScale(0.05f, 0.25f);
+    std::uniform_real_distribution<float> distRotate(0.0f, 360.0f);
+    auto randOffset = std::bind(distOffset, rng);
+    auto randScale = std::bind(distScale, rng);
+    auto randRotate = std::bind(distRotate, rng);
+
+    timer.setStart();
     for (unsigned int i = 0; i < amount; ++i)
     {
         glm::mat4 model = glm::mat4(1.0f);
-        
+
         // 1. translation: displace along circle with 'radius' in range [-offset, offset] 
         float angle = (float)i / (float)amount * 360.0f;
-        float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-        float x = sin(angle) * radius + displacement;
-        displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-        float y = displacement * 0.4f;
-        displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
-        float z = cos(angle) * radius + displacement;
-        model = glm::translate(model, glm::vec3(x,y,z));
+        float x = sin(angle) * radius + randOffset();
+        float y = randOffset() * 0.4f;
+        float z = cos(angle) * radius + randOffset();
+        model = glm::translate(model, glm::vec3(x, y, z));
 
         // 2. scale: scale between 0.05 and 0.25f
-        float scale = (rand() % 20) / 100.0f + 0.05f;
-        model = glm::scale(model, glm::vec3(scale));
+        model = glm::scale(model, glm::vec3(randScale()));
 
         // 3. rotation: add random rotation around a(semi)randomly picked rotation axis vector
-        model = glm::rotate(model, (float)(rand() % 360), glm::vec3(0.5f, 0.1f, 0.3f));
+        model = glm::rotate(model, randRotate(), glm::vec3(0.5f, 0.1f, 0.3f));
 
         rockModelMatrices.push_back(model);
     }
