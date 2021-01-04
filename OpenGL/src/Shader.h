@@ -25,20 +25,20 @@ public:
     void Unuse() const;
 
     // Add more shaders
-    void AddShader(const GLenum& type, const std::string& sourcePath);
+    void AddShader(GLenum type, const std::string& sourcePath);
 
     // utility uniform functions
     void SetUniform1i(const std::string& name, int value) const;
     void SetUniform1f(const std::string& name, float value) const;
     void SetUniformMat4(const std::string& name, const glm::mat4& matrix) const;
-    void SetUniformVec3(const std::string& name, const float& x, const float& y, const float& z) const;
+    void SetUniformVec3(const std::string& name, float x, float y, float z) const;
     void SetUniformVec3(const std::string& name, const glm::vec3& vector) const;
-    void SetUniformVec2(const std::string& name, const float& x, const float& y) const;
+    void SetUniformVec2(const std::string& name, float x, float y) const;
     void SetUniformVec2(const std::string& name, const glm::vec2& vector) const;
     GLuint GetID() const;
 
 private:
-    GLuint CompileShader(const GLenum& type, const char* source);
+    GLuint CompileShader(GLenum type, const char* source);
     
-    GLuint CreateProgram(const GLuint& vertexShader, const GLuint& fragmentShader);
+    GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader);
 };

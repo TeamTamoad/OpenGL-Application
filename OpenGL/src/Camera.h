@@ -40,9 +40,9 @@ public:
 	bool mFreezed = false;
 
 	// constructor with vectors
-	Camera(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f), const float& yaw = YAW, const float& pitch = PITCH);
+	Camera(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
 	// constructor with scalar values
-	Camera(const float& posX, const float& posY, const float& posZ, const float& upX, const float& upY, const float& upZ, const float& yaw, const float& pitch);
+	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 	
 	glm::mat4 GetViewMatrix();
 

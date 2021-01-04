@@ -1,13 +1,13 @@
 #include "Camera.h"
 
-Camera::Camera(const glm::vec3& position, const glm::vec3& up, const float& yaw, const float& pitch)
+Camera::Camera(const glm::vec3& position, const glm::vec3& up, float yaw, float pitch)
 	: mPosition(position), mWorldUp(up), mFront(glm::vec3(0.0f, 0.0f, -1.0f)), mYaw(yaw), mPitch(pitch), 
 	  mMovementSpeed(SPEED), mMouseSensitivity(SENSITIVITY), mFOV(FOV)
 {
 	updateCameraVectors();
 }
 
-Camera::Camera(const float& posX, const float& posY, const float& posZ, const float& upX, const float& upY, const float& upZ, const float& yaw, const float& pitch)
+Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
 	: mFront(glm::vec3(0.0f, 0.0f, -1.0f)), mYaw(yaw), mPitch(pitch), mMovementSpeed(SPEED), 
 	  mMouseSensitivity(SENSITIVITY), mFOV(FOV)
 {

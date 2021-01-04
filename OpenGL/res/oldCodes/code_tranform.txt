@@ -106,7 +106,7 @@ static unsigned int CreateShader(const std::string& vertexShader, const std::str
 
 }
 
-void MyTranform(float* oldPos , const float& speed)
+void MyTranform(float* oldPos , float speed)
 {
 
     for (int i = 0; i < 3; i++)

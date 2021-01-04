@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stb_image.h>
 
-Texture2D::Texture2D(const char* source, const GLuint& slot) : mSlot(slot), mID(0)
+Texture2D::Texture2D(const char* source, GLuint slot) : mSlot(slot), mID(0)
 {
 	int width, height, nrChannels;
 	unsigned char* image;

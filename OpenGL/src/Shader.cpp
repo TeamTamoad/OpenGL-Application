@@ -46,7 +46,7 @@ void Shader::Unuse() const
 	glUseProgram(0);
 }
 
-void Shader::AddShader(const GLenum& type, const std::string& sourcePath)
+void Shader::AddShader(GLenum type, const std::string& sourcePath)
 {
 	std::string sourceCode;
 	std::ifstream sourceFile;
@@ -124,7 +124,7 @@ void Shader::SetUniformMat4(const std::string& name, const glm::mat4& matrix) co
 	}
 }
 
-void Shader::SetUniformVec3(const std::string& name, const float& x, const float& y, const float& z) const
+void Shader::SetUniformVec3(const std::string& name, float x, float y, float z) const
 {
 	GLint location = glGetUniformLocation(mID, name.c_str());
 	if (location >= 0)
@@ -148,7 +148,7 @@ void Shader::SetUniformVec3(const std::string& name, const glm::vec3& vector) co
 	}
 }
 
-void Shader::SetUniformVec2(const std::string& name, const float& x, const float& y) const
+void Shader::SetUniformVec2(const std::string& name, float x, float y) const
 {
 	GLint location = glGetUniformLocation(mID, name.c_str());
 	if (location >= 0)
@@ -176,7 +176,7 @@ GLuint Shader::GetID() const {
 	return mID;
 }
 
-GLuint Shader::CompileShader(const GLenum& type, const char* source)
+GLuint Shader::CompileShader(GLenum type, const char* source)
 {
 	GLuint shader = glCreateShader(type);
 	glShaderSource(shader, 1, &source, NULL);
@@ -198,7 +198,7 @@ GLuint Shader::CompileShader(const GLenum& type, const char* source)
 	return shader;
 }
 
-GLuint Shader::CreateProgram(const GLuint& vertexShader, const GLuint& fragmentShader)
+GLuint Shader::CreateProgram(GLuint vertexShader, GLuint fragmentShader)
 {
 	GLuint shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
