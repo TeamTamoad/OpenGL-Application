@@ -26,7 +26,7 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	}
 	catch (std::ifstream::failure e)
 	{
-		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
+		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << "\n";
 		ASSERT(false);
 	}
 
@@ -64,7 +64,7 @@ void Shader::AddShader(GLenum type, const std::string& sourcePath)
 	}
 	catch (std::ifstream::failure e)
 	{
-		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ at " << sourcePath << std::endl;
+		std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ at " << sourcePath << "\n";
 		ASSERT(false);
 	}
 
@@ -80,7 +80,7 @@ void Shader::AddShader(GLenum type, const std::string& sourcePath)
 
 	if (!success)
 	{
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << "\n";
 	}
 
 	glDeleteShader(shader);
@@ -94,7 +94,7 @@ void Shader::SetUniform1i(const std::string& name, int value) const
 		glUniform1i(location, value);
 	else
 	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << std::endl;
+		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
 		ASSERT(false);
 	}
 }
@@ -106,7 +106,7 @@ void Shader::SetUniform1f(const std::string& name, float value) const
 		glUniform1f(glGetUniformLocation(mID, name.c_str()), value);
 	else 
 	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << std::endl;
+		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
 		ASSERT(false);
 	}
 		
@@ -119,7 +119,7 @@ void Shader::SetUniformMat4(const std::string& name, const glm::mat4& matrix) co
 		glUniformMatrix4fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 	else
 	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << std::endl;
+		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
 		ASSERT(false);
 	}
 }
@@ -131,7 +131,7 @@ void Shader::SetUniformVec3(const std::string& name, float x, float y, float z) 
 		glUniform3f(location, x, y, z);
 	else
 	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << std::endl;
+		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
 		ASSERT(false);
 	}
 }
@@ -143,7 +143,7 @@ void Shader::SetUniformVec3(const std::string& name, const glm::vec3& vector) co
 		glUniform3f(location, vector.x, vector.y, vector.z);
 	else
 	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << std::endl;
+		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
 		ASSERT(false);
 	}
 }
@@ -155,7 +155,7 @@ void Shader::SetUniformVec2(const std::string& name, float x, float y) const
 		glUniform2f(location, x, y);
 	else
 	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << std::endl;
+		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
 		ASSERT(false);
 	}
 }
@@ -167,7 +167,7 @@ void Shader::SetUniformVec2(const std::string& name, const glm::vec2& vector) co
 		glUniform2f(location, vector.x, vector.y);
 	else
 	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << std::endl;
+		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
 		ASSERT(false);
 	}
 }
@@ -189,9 +189,9 @@ GLuint Shader::CompileShader(GLenum type, const char* source)
 
 	if (!success) {
 		if (type == GL_VERTEX_SHADER)
-			std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+			std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << "\n";
 		else if (type == GL_FRAGMENT_SHADER)
-			std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+			std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << "\n";
 		ASSERT(false);
 	}
 
@@ -212,7 +212,7 @@ GLuint Shader::CreateProgram(GLuint vertexShader, GLuint fragmentShader)
 
 	if (!success)
 	{
-		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << "\n";
 	}
 
 	glDeleteShader(vertexShader);

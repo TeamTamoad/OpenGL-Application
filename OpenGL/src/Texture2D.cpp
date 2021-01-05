@@ -32,7 +32,7 @@ Texture2D::Texture2D(const char* source, GLuint slot) : mSlot(slot), mID(0)
 	}
 	else
 	{
-		std::cout << "ERROR::TEXTURE2D::LOADING_IMAGE_FAILED" << std::endl;
+		std::cout << "ERROR::TEXTURE2D::LOADING_IMAGE_FAILED" << "\n";
 		ASSERT(false);
 	}
 

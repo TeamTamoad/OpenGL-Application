@@ -7,7 +7,7 @@
 #include <string>
 #include <sstream>
 
-#define LOG(x) std::cout << x << std::endl
+#define LOG(x) std::cout << x << "\n"
 #define ASSERT(x) if(!(x)) __debugbreak()
 #define GLCall(x) GLClearError(); x; ASSERT(GLLogCall(#x, __FILE__, __LINE__))
 
@@ -27,7 +27,7 @@ static bool GLLogCall(const char* function, const char* file, int line)
     if (GLenum error = glGetError())
     {
         std::cout << "[OpenGL Error] " << "0x" << std::hex << error << std::dec << "\n"
-            << function << " " << file << ": " << line << std::endl;
+            << function << " " << file << ": " << line << "\n";
         return false;
     }
     return true;
@@ -79,8 +79,8 @@ static unsigned int CompileShader(unsigned int type, const std::string& source)
         glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         char* message = (char*)_malloca(length * sizeof(char));
         glGetShaderInfoLog(id, length, &length, message);
-        std::cout << "Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex shader" : "fragment shader" )<< std::endl;
-        std::cout << message << std::endl;
+        std::cout << "Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex shader" : "fragment shader" )<< "\n";
+        std::cout << message << "\n";
         glDeleteShader(id);
         return 0;
     }
@@ -153,9 +153,9 @@ int main(void)
     glfwSwapInterval(1);
 
     if (glewInit() != GLEW_OK)
-        std::cout << "GLEW Init Error" << std::endl;
+        std::cout << "GLEW Init Error" << "\n";
 
-    std::cout << glGetString(GL_VERSION) << std::endl;
+    std::cout << glGetString(GL_VERSION) << "\n";
 
     float positions[] = {
         -0.5f, -0.5f,

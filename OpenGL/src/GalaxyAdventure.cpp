@@ -28,7 +28,6 @@ GalaxyAdventure::GalaxyAdventure()
 {
     mCamera.mPosition = glm::vec3(0.0f, 20.0f, 110.0f);
     mCamera.updateCameraVectors();
-
 }
 
 int GalaxyAdventure::run()
@@ -217,7 +216,7 @@ int GalaxyAdventure::run()
 
         // Handle input
         ProcessInput(window, deltaTime);
-
+        
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -267,10 +266,7 @@ int GalaxyAdventure::run()
             ImGui::Text("SPACE BAR - move upward");
             ImGui::Text("CTRL- move downward");
             ImGui::Text("F - freeze the screen and show cursor");
-
-            ImGui::BeginChild("Test Child");
-            ImGui::Text("Texst");
-            ImGui::EndChild();
+            ImGui::Text("SHIFT - Accelerate the cameara speed");
 
             ImGui::End();
         }

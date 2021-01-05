@@ -1,6 +1,5 @@
 #pragma once
 #define GLEW_STATIC
-#define STB_IMAGE_IMPLEMENTATION
 #include <GL/glew.h>
 #include <vector>
 #include <string>
