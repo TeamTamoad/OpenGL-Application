@@ -23,24 +23,26 @@ class Camera
 public:
 	// camera Attributes
 	glm::vec3 mPosition;
+	glm::vec3 mWorldUp;
 	glm::vec3 mFront;
 	glm::vec3 mUp;
 	glm::vec3 mRight;
-	glm::vec3 mWorldUp;
 	// Euler angles
 	float mYaw;
 	float mPitch;
 	// camera options
-	float mMovementSpeed;
-	float mMouseSensitivity;
-	float mFOV;
-	float mBoostSpeed = 2.0f;
+	float mMovementSpeed	= 2.5f;
+	float mMouseSensitivity = 1.0f;
+	float mFOV				= 45.0f;
+	float mBoostSpeed		= 2.0f;
 	// bool options
 	bool mBoosted = false;
 	bool mFreezed = false;
 
+	// default constructor
+	Camera();
 	// constructor with vectors
-	Camera(const glm::vec3& position = glm::vec3(0.0f), const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
+	Camera(const glm::vec3& position, const glm::vec3& up, float yaw, float pitch);
 	// constructor with scalar values
 	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 	
@@ -50,8 +52,5 @@ public:
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
 	void ProcessMouseScroll(float yoffset);
 	void SetBoostSpeed(float speedUP);
-
-
-private:
 	void updateCameraVectors();
 };

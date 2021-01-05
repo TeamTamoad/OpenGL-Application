@@ -1,18 +1,29 @@
 #include "Camera.h"
-
-Camera::Camera(const glm::vec3& position, const glm::vec3& up, float yaw, float pitch)
-	: mPosition(position), mWorldUp(up), mFront(glm::vec3(0.0f, 0.0f, -1.0f)), mYaw(yaw), mPitch(pitch), 
-	  mMovementSpeed(SPEED), mMouseSensitivity(SENSITIVITY), mFOV(FOV)
+#include <glm/glm.hpp>
+Camera::Camera() :
+	mPosition(glm::vec3(0.0f)),
+	mWorldUp(glm::vec3(0.0f, 1.0f, 0.0f)),
+	mYaw(-90.0f),
+	mPitch(0.0f)
 {
 	updateCameraVectors();
 }
 
-Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
-	: mFront(glm::vec3(0.0f, 0.0f, -1.0f)), mYaw(yaw), mPitch(pitch), mMovementSpeed(SPEED), 
-	  mMouseSensitivity(SENSITIVITY), mFOV(FOV)
+Camera::Camera(const glm::vec3& position, const glm::vec3& up, float yaw, float pitch) : 
+	mPosition(position), 
+	mWorldUp(up), 
+	mYaw(yaw), 
+	mPitch(pitch)
 {
-	mPosition = glm::vec3(posX, posY, posZ);
-	mWorldUp = glm::vec3(upX, upY, upZ);
+	updateCameraVectors();
+}
+
+Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : 
+	mPosition(glm::vec3(posX, posY, posZ)),
+	mWorldUp(glm::vec3(upX, upY, upZ)),
+	mYaw(yaw), 
+	mPitch(pitch)
+{
 	updateCameraVectors();
 }
 
