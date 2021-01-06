@@ -225,6 +225,7 @@
     <Image Include="res\cubemaps\ulukai\redeclipse_lf.png" />
     <Image Include="res\cubemaps\ulukai\redeclipse_rt.png" />
     <Image Include="res\cubemaps\ulukai\redeclipse_up.png" />
+    <Image Include="res\showcase\GalaxyAdventure\GA-camera.gif" />
     <Image Include="res\showcase\GalaxyAdventure\GA-light.gif" />
     <Image Include="res\showcase\GalaxyAdventure\GA-model.gif" />
     <Image Include="res\showcase\GalaxyAdventure\GA.png" />
