@@ -3,11 +3,16 @@ I create this project to learn about rendering 3D-graphic with OpenGL. Some of t
 
 ## Galaxy Adventure
 Being an astronaut and exploring an expansive galaxy.
+![Galaxy](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA.png)
+
 #### Key features
-* FPS Camera System
+* First-person Camera System
 * Phong shading
 * Instanced Rendering
 * UI for adjusting environment
+
+![Adjusting environmental light](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA-light.gif)
+![Resizing planet](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA-model.gif)
 
 ## Credit
 These are amazing tutorials that I learn from. You can take a look at it. 
