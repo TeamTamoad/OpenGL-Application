@@ -1,8 +1,8 @@
-#include "GalaxyAdventure.h"
+#include "ModelViewer.h"
 
 int main()
 {
-	GalaxyAdventure app;
+	ModelViewer app;
 	app.run();
 	return 0;
 }

@@ -1,4 +1,6 @@
 #include "GalaxyAdventure.h"
+
+#include <functional>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -6,14 +8,12 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
-
 #include <iostream>
 #include <random>
-#include <functional>
 
+#include "Model.h"
 #include "Shader.h"
 #include "Timer.h"
-#include "Model.h"
 #include "utility.h"
 
 
@@ -27,6 +27,8 @@ bool GalaxyAdventure::firstMouse = false;
 GalaxyAdventure::GalaxyAdventure()
 {
     mCamera.mPosition = glm::vec3(0.0f, 20.0f, 110.0f);
+    mCamera.mMovementSpeed = 5.0f;
+    mCamera.mBoostSpeed = 5.0f;
     mCamera.updateCameraVectors();
 }
 
@@ -43,19 +45,19 @@ int GalaxyAdventure::run()
     GLFWwindow* window = glfwCreateWindow(mScrWidth, mScrHeight, "OpenGL Tutorial", nullptr, nullptr); // Windowed
     //GLFWwindow* window = glfwCreateWindow(1920, 1080, "OpenGL", glfwGetPrimaryMonitor(), nullptr); // Fullscreen
 
-    // Set callback functions
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glfwSetCursorPosCallback(window, mouse_callback);
-    glfwSetScrollCallback(window, scroll_callback);
-    glfwSetKeyCallback(window, key_callback);
-
     if (!window)
     {
         std::cout << "Failed to create GLFW window" << "\n";
         glfwTerminate();
         return -1;
     }
+
+    // Set callback functions
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     glfwMakeContextCurrent(window);
 
@@ -68,7 +70,6 @@ int GalaxyAdventure::run()
     std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes << "\n\n";
 
     // ----------------------------------------- IMGUI SETUP -------------------------------------------------------
-
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -78,16 +79,12 @@ int GalaxyAdventure::run()
 
 
     // -------------------------------------- SHADER PROGRAM SETUP --------------------------------------------------
-
     Shader instanceShader("res/shaders/instance.vert", "res/shaders/instance.frag");
     Shader modelShader("res/shaders/model.vert", "res/shaders/model.frag");
     Shader skyboxShader("res/shaders/cubemap.vert", "res/shaders/cubemap.frag");
 
 
     // ----------------------------------------- DATA SECTION -------------------------------------------------------
-
-    mCamera.mPosition = glm::vec3(0.0f, 20.0f, 110.0f);
-    mCamera.updateCameraVectors();
     std::vector<float> skyboxVertices = {
         // positions          
         -1.0f,  1.0f, -1.0f,
@@ -155,7 +152,6 @@ int GalaxyAdventure::run()
     };
 
     // ----------------------------------------- VERTEX ARRAY OBJECT SECTION -----------------------------------------
-
     Model planet("res/models/planet/planet.obj");
     Model rock("res/models/rock/rock.obj");
 
@@ -192,7 +188,6 @@ int GalaxyAdventure::run()
 
     //SETTING SECTION
     //----------------
-    float deltaTime = 0.0f;
     float lastFrame = 0.0f;
 
     float ambientValue = 0.1f;
@@ -202,16 +197,13 @@ int GalaxyAdventure::run()
     float planetScale = 5.0f;
     int   rockRenderAmount = 10000;
 
-    mCamera.mMovementSpeed = 5.0f;
-    mCamera.mBoostSpeed = 5.0f;
-
     // RENDER LOOP
     // -----------
     while (!glfwWindowShouldClose(window))
     {
         // Timing logic
-        const float currentFrame = (float)glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
+        float currentFrame = glfwGetTime();
+        float deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
         // Handle input
