@@ -13,6 +13,14 @@ Being an astronaut and exploring an expansive galaxy.
 ![Resizing planet](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA-model.gif)
 ![Moving camera](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA-camera.gif)
 
+## Model Viewer
+Load a model object. Yeah! That's it.
+#### Key features
+* Normal Vector Visualization
+
+![ฺBackpack model moving around](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/ModelViewer/MV-plain.gif)
+![Backpack model moving around with normal vector](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/ModelViewer/MV-normal-vector.gif)
+
 ## Credit
 These are amazing tutorials that I learn from. You can take a look at it. 
 * https://learnopengl.com/Introduction
