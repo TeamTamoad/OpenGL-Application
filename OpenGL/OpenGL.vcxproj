@@ -231,6 +231,8 @@
     <Image Include="res\showcase\GalaxyAdventure\GA-light.gif" />
     <Image Include="res\showcase\GalaxyAdventure\GA-model.gif" />
     <Image Include="res\showcase\GalaxyAdventure\GA.png" />
+    <Image Include="res\showcase\ModelViewer\MV-normal-vector.gif" />
+    <Image Include="res\showcase\ModelViewer\MV-plain.gif" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\blending.frag" />

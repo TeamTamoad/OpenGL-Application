@@ -241,6 +241,12 @@
     <Image Include="res\showcase\GalaxyAdventure\GA-camera.gif">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\showcase\ModelViewer\MV-plain.gif">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\showcase\ModelViewer\MV-normal-vector.gif">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\color.frag" />
