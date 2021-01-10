@@ -1,19 +1,19 @@
 # OpenGL-Application
-I create this project to learn about rendering 3D-graphic with OpenGL. Some of the result are shown below to reflect my knowledge.
+I create this project to learn about rendering 3D-graphic with OpenGL. Some of the results are shown below to reflect my knowledge.
 
-## Galaxy Adventure
+## :milky_way: Galaxy Adventure
 Being an astronaut and exploring an expansive galaxy.
 #### Key features
 * First-person Camera System
 * Phong shading
 * Instanced Rendering
-* UI for adjusting environment
+* UI for adjusting the environment
 
 ![Adjusting environmental light](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA-light.gif)
 ![Resizing planet](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA-model.gif)
 ![Moving camera](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA-camera.gif)
 
-## Model Viewer
+## :trophy: Model Viewer
 Load a model object. Yeah! That's it.
 #### Key features
 * Normal Vector Visualization
@@ -21,8 +21,8 @@ Load a model object. Yeah! That's it.
 ![ฺBackpack model moving around](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/ModelViewer/MV-plain.gif)
 ![Backpack model moving around with normal vector](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/ModelViewer/MV-normal-vector.gif)
 
-## Credit
-These are amazing tutorials that I learn from. You can take a look at it. 
+## :memo: Credit
+These are amazing tutorials that I study. You can have a look at it. 
 * https://learnopengl.com/Introduction
 * https://open.gl/introduction
 * https://www.youtube.com/watch?v=W3gAzLwfIP0&list=PLlrATfBNZ98foTJPJ_Ev03o2oq3-GGOS2
