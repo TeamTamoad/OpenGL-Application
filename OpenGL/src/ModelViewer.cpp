@@ -94,7 +94,8 @@ int ModelViewer::run()
     //SETTING SECTION
     //----------------
     float lastFrame = 0.0f;
-    float normalLength = 0.2f;
+    float normalLength = 0.15f;
+    float normalColor[3] = {1.0f, 1.0f, 0.0f};
     bool isShowNorm = false;
     glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
@@ -124,10 +125,13 @@ int ModelViewer::run()
             ImGui::Text("Normal vector visualization");
             ImGui::Checkbox("Show Normal Vector", &isShowNorm);
             ImGui::SliderFloat("Lenght", &normalLength, 0.01f, 0.5f);
-
+            ImGui::ColorPicker3("Color", normalColor);
             if (ImGui::Button("Default"))
             {
-                normalLength = 0.2f;
+                normalLength = 0.15f;
+                normalColor[0] = 1.0f;
+                normalColor[1] = 1.0f;
+                normalColor[2] = 0.0f;
                 isShowNorm = false;
             }
             ImGui::SameLine(); ImGui::Text("Set all values to defaults");
@@ -160,7 +164,7 @@ int ModelViewer::run()
         modelShader.SetUniformMat4("projection", projection);
         modelShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
         //modelShader.SetUniform1f("time", currentFrame);
-        modelShader.SetUniformVec3("ambient", glm::vec3(0.5f));
+        modelShader.SetUniformVec3("ambient", glm::vec3(0.7f));
         modelShader.SetUniformVec3("viewPos", mCamera.mPosition);
 
         //point light
@@ -177,7 +181,7 @@ int ModelViewer::run()
             normalVisualShader.SetUniformMat4("model", model);
             normalVisualShader.SetUniformMat4("view", view);
             normalVisualShader.SetUniformMat4("projection", projection);
-            normalVisualShader.SetUniformVec3("color", glm::vec3(1.0f, 1.0f, 0.0f));
+            normalVisualShader.SetUniformVec3("color", normalColor[0], normalColor[1], normalColor[2]);
             normalVisualShader.SetUniform1f("magnitude", normalLength);
             backpack.DrawTextureless(normalVisualShader);
         }
