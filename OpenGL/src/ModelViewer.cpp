@@ -24,6 +24,13 @@ float ModelViewer::lastX = mScrWidth / 2.0f;
 float ModelViewer::lastY = mScrHeight / 2.0f;
 bool ModelViewer::firstMouse = false;
 
+template<class T>
+struct Poll
+{
+    T prev;
+    T now;
+};
+
 ModelViewer::ModelViewer()
 {
     mCamera.mPosition = glm::vec3(0.0f, 3.0f, 7.0f);
@@ -76,7 +83,8 @@ int ModelViewer::run()
 
     // -------------------------------------- SHADER PROGRAM SETUP --------------------------------------------------
     Shader modelShader("res/shaders/model.vert", "res/shaders/model.frag");
-    //modelShader.AddShader(GL_GEOMETRY_SHADER, "res/shaders/explode.geom");
+    Shader explodeShader("res/shaders/model.vert", "res/shaders/model.frag");
+    explodeShader.AddShader(GL_GEOMETRY_SHADER, "res/shaders/explode.geom");
     Shader normalVisualShader("res/shaders/normal_visualize.vert", "res/shaders/singleColor.frag");
     normalVisualShader.AddShader(GL_GEOMETRY_SHADER, "res/shaders/normal_visualize.geom");
     
@@ -93,10 +101,12 @@ int ModelViewer::run()
 
     //SETTING SECTION
     //----------------
-    float lastFrame = 0.0f;
+    float explodeFrame = 0.0f;
     float normalLength = 0.15f;
     float normalColor[3] = {1.0f, 1.0f, 0.0f};
-    bool isShowNorm = false;
+    Poll<bool> isShowNorm = {false, false};
+    Poll<bool> isExploded = {false, false};
+    Poll<float> mainTime = {glfwGetTime(), glfwGetTime()};
     glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
     // RENDER LOOP
@@ -104,9 +114,9 @@ int ModelViewer::run()
     while (!glfwWindowShouldClose(window))
     {
         // Timing logic
-        float currentFrame = glfwGetTime();
-        float deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        mainTime.now = glfwGetTime();
+        float deltaTime = mainTime.now - mainTime.prev;
+        explodeFrame += deltaTime;
 
         // Handle input
         ProcessInput(window, deltaTime);
@@ -122,8 +132,11 @@ int ModelViewer::run()
         {
             ImGui::Begin("Setting Panel");
 
+            ImGui::Text("Model Explosion");
+            ImGui::Checkbox("Explode the model", &isExploded.now);
+
             ImGui::Text("Normal vector visualization");
-            ImGui::Checkbox("Show Normal Vector", &isShowNorm);
+            ImGui::Checkbox("Show Normal Vector", &isShowNorm.now);
             ImGui::SliderFloat("Lenght", &normalLength, 0.01f, 0.5f);
             ImGui::ColorPicker3("Color", normalColor);
             if (ImGui::Button("Default"))
@@ -132,7 +145,8 @@ int ModelViewer::run()
                 normalColor[0] = 1.0f;
                 normalColor[1] = 1.0f;
                 normalColor[2] = 0.0f;
-                isShowNorm = false;
+                isShowNorm.now = false;
+                isExploded.now = false;
             }
             ImGui::SameLine(); ImGui::Text("Set all values to defaults");
 
@@ -147,35 +161,61 @@ int ModelViewer::run()
             ImGui::Text("SPACE BAR - move upward");
             ImGui::Text("CTRL- move downward");
             ImGui::Text("F - freeze the screen and show cursor");
-            ImGui::Text("SHIFT - Accelerate the cameara speed");
+            ImGui::Text("SHIFT - accelerate the cameara speed");
 
             ImGui::End();
         }
 
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(currentFrame * 12.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(mainTime.now * 12.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         glm::mat4 view = mCamera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(mCamera.mFOV), mScrWidth / mScrHeight, 0.1f, 100.0f);
 
-        // Set uniform values
-        modelShader.Use();
-        modelShader.SetUniformMat4("model", model);
-        modelShader.SetUniformMat4("view", view);
-        modelShader.SetUniformMat4("projection", projection);
-        modelShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
-        //modelShader.SetUniform1f("time", currentFrame);
-        modelShader.SetUniformVec3("ambient", glm::vec3(0.7f));
-        modelShader.SetUniformVec3("viewPos", mCamera.mPosition);
+        // When check the expolde model button
+        if (!isExploded.prev && isExploded.now)
+        {
+            explodeFrame = -glm::pi<float>() / 2.0f;
+            isShowNorm.now = false;
+        }
 
-        //point light
-        modelShader.SetUniformVec3("pointLight.position", lightPos);
-        modelShader.SetUniformVec3("pointLight.diffuse", 0.0f, 0.0f, 0.0f);
-        modelShader.SetUniform1f("pointLight.linear", 0.07f);
-        modelShader.SetUniform1f("pointLight.quadratic", 0.017f);
+        if (!isShowNorm.prev && isShowNorm.now)
+        {
+            isExploded.now = false;
+        }
 
-        backpack.Draw(modelShader);
+        if (isExploded.now)
+        {
+            explodeShader.Use();
+            explodeShader.SetUniformMat4("model", model);
+            explodeShader.SetUniformMat4("view", view);
+            explodeShader.SetUniformMat4("projection", projection);
+            explodeShader.SetUniformVec3("ambient", glm::vec3(0.7f));
+            explodeShader.SetUniformVec3("viewPos", mCamera.mPosition);
+            explodeShader.SetUniformVec3("pointLight.position", lightPos);
+            explodeShader.SetUniformVec3("pointLight.diffuse", 0.0f, 0.0f, 0.0f);
+            explodeShader.SetUniform1f("pointLight.linear", 0.07f);
+            explodeShader.SetUniform1f("pointLight.quadratic", 0.017f);
+            explodeShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
+            explodeShader.SetUniform1f("time", explodeFrame);
+            backpack.Draw(explodeShader);
+        }
+        else
+        {
+            modelShader.Use();
+            modelShader.SetUniformMat4("model", model);
+            modelShader.SetUniformMat4("view", view);
+            modelShader.SetUniformMat4("projection", projection);
+            modelShader.SetUniformVec3("ambient", glm::vec3(0.7f));
+            modelShader.SetUniformVec3("viewPos", mCamera.mPosition);
+            modelShader.SetUniformVec3("pointLight.position", lightPos);
+            modelShader.SetUniformVec3("pointLight.diffuse", 0.0f, 0.0f, 0.0f);
+            modelShader.SetUniform1f("pointLight.linear", 0.07f);
+            modelShader.SetUniform1f("pointLight.quadratic", 0.017f);
+            modelShader.SetUniform1f("material.shininess", 0.4f * 128.0f);
+            backpack.Draw(modelShader);
+        }
 
-        if (isShowNorm)
+        if (isShowNorm.now)
         {
             normalVisualShader.Use();
             normalVisualShader.SetUniformMat4("model", model);
@@ -189,6 +229,11 @@ int ModelViewer::run()
         // Render GUI
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // Update Poll variables
+        isExploded.prev = isExploded.now;
+        isShowNorm.prev = isShowNorm.now;
+        mainTime.prev = mainTime.now;
 
         glfwSwapBuffers(window);
         glfwPollEvents();
