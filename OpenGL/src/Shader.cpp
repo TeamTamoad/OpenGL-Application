@@ -89,87 +89,51 @@ void Shader::AddShader(GLenum type, const std::string& sourcePath)
 // Setter Methods
 void Shader::SetUniform1i(const std::string& name, int value) const
 {
-	GLint location = glGetUniformLocation(mID, name.c_str());
+	GLint location = GetUniformLocation(name);
 	if (location >= 0)
 		glUniform1i(location, value);
-	else
-	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
-		ASSERT(false);
-	}
 }
 
 void Shader::SetUniform1f(const std::string& name, float value) const
 {
-	GLint location = glGetUniformLocation(mID, name.c_str());
+	GLint location = GetUniformLocation(name);
 	if (location >= 0)
-		glUniform1f(glGetUniformLocation(mID, name.c_str()), value);
-	else 
-	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
-		ASSERT(false);
-	}
-		
+		glUniform1f(location, value);
 }
 
 void Shader::SetUniformMat4(const std::string& name, const glm::mat4& matrix) const
 {
-	GLint location = glGetUniformLocation(mID, name.c_str());
+	GLint location = GetUniformLocation(name);
 	if (location >= 0)
-		glUniformMatrix4fv(glGetUniformLocation(mID, name.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
-	else
-	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
-		ASSERT(false);
-	}
+		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void Shader::SetUniformVec3(const std::string& name, float x, float y, float z) const
 {
-	GLint location = glGetUniformLocation(mID, name.c_str());
+	GLint location = GetUniformLocation(name);
 	if (location >= 0)
 		glUniform3f(location, x, y, z);
-	else
-	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
-		ASSERT(false);
-	}
 }
 
 void Shader::SetUniformVec3(const std::string& name, const glm::vec3& vector) const
 {
-	GLint location = glGetUniformLocation(mID, name.c_str());
+	GLint location = GetUniformLocation(name);
 	if (location >= 0)
 		glUniform3f(location, vector.x, vector.y, vector.z);
-	else
-	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
-		ASSERT(false);
-	}
 }
 
 void Shader::SetUniformVec2(const std::string& name, float x, float y) const
 {
-	GLint location = glGetUniformLocation(mID, name.c_str());
+	GLint location = GetUniformLocation(name);
 	if (location >= 0)
 		glUniform2f(location, x, y);
-	else
-	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
-		ASSERT(false);
-	}
 }
 
 void Shader::SetUniformVec2(const std::string& name, const glm::vec2& vector) const
 {
-	GLint location = glGetUniformLocation(mID, name.c_str());
+	GLint location = GetUniformLocation(name);
 	if (location >= 0)
 		glUniform2f(location, vector.x, vector.y);
-	else
-	{
-		std::cout << "ERROR::SHADER::SETTING_UNIFORM_FAILED:: " << name << " do not exist." << "\n";
-		ASSERT(false);
-	}
 }
 
 GLuint Shader::GetID() const {
@@ -219,4 +183,20 @@ GLuint Shader::CreateProgram(GLuint vertexShader, GLuint fragmentShader)
 	glDeleteShader(fragmentShader);
 
 	return shaderProgram;
+}
+
+GLint Shader::GetUniformLocation(const std::string& name) const
+{
+	if (uniformLocations.find(name) != uniformLocations.end())
+		return uniformLocations[name];
+
+	GLint location = glGetUniformLocation(mID, name.c_str());
+	if (location == -1)
+	{
+		std::cout << "ERROR::SHADER::GETTING_UNIFORM_LOCATION_FAILED:: " << name << " do not exist." << "\n";
+		ASSERT(false);
+	}
+	uniformLocations[name] = location;
+
+	return location; 
 }

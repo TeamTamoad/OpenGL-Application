@@ -1,12 +1,12 @@
 #pragma once
 
+#include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#include <string>
-#include <fstream>
-#include <sstream>
 #include <iostream>
+#include <sstream>
+#include <string>
+#include <unordered_map>
 
 #include "Renderer.h"
 
@@ -15,7 +15,7 @@ class Shader
 private:
     // the program ID
 	GLuint mID;
-
+    mutable std::unordered_map<std::string, GLint> uniformLocations;
 public:
     // constructor reads and builds the shader
     Shader(const char* vertexPath, const char* fragmentPath);
@@ -39,6 +39,6 @@ public:
 
 private:
     GLuint CompileShader(GLenum type, const char* source);
-    
     GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader);
+    GLint GetUniformLocation(const std::string& name) const;
 };
