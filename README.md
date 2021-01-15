@@ -8,18 +8,18 @@ Being an astronaut and exploring an expansive galaxy.
 * Phong shading
 * Instanced Rendering
 * UI for adjusting the environment
+<img src="OpenGL/res/showcase/GalaxyAdventure/GA-light.gif"  alt="Adjusting environmental light" width="600">
+<img src="OpenGL/res/showcase/GalaxyAdventure/GA-model.gif"  alt="Resizing planet"               width="600">
+<img src="OpenGL/res/showcase/GalaxyAdventure/GA-camera.gif" alt="Moving camera"                 width="600">
 
-![Adjusting environmental light](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA-light.gif)
-![Resizing planet](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA-model.gif)
-![Moving camera](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/GalaxyAdventure/GA-camera.gif)
 
 ## :trophy: Model Viewer
-Load a model object. Yeah! That's it.
+Display a model object and apply cool stuff to it.
 #### Key features
 * Normal Vector Visualization
+<img src="OpenGL/res/showcase/ModelViewer/MV-plain.gif"  alt="Backpack model" width="600">
+<img src="OpenGL/res/showcase/ModelViewer/MV-normal-vector.gif"  alt="[Backpack model with normal vector" width="600">
 
-![ฺBackpack model moving around](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/ModelViewer/MV-plain.gif)
-![Backpack model moving around with normal vector](https://github.com/TeamTamoad/OpenGL-Application/blob/master/OpenGL/res/showcase/ModelViewer/MV-normal-vector.gif)
 
 ## :memo: Credit
 These are amazing tutorials that I study. You can have a look at it. 
